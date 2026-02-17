@@ -1,17 +1,11 @@
-# Patrones
-Decimo Semestre-Patrones de Software
+# Patrones - Sistema Bancario Core
 
-# Sistema Bancario Core - Módulo KYC/AML
-
-Proyecto académico que simula componentes clave de un **core bancario** moderno, con enfoque especial en procesos de **cumplimiento regulatorio** (KYC y AML) en tiempo real.
+Este proyecto académico simula componentes clave de un entorno bancario moderno, con enfoque especial en procesos de **cumplimiento regulatorio** (KYC y AML) en tiempo real.
 
 **Objetivo principal**  
 Demostrar la aplicación práctica de **principios SOLID** y **patrones de diseño** para construir software de calidad en un contexto financiero regulado, eliminando code smells comunes y logrando un diseño modular, mantenible y extensible.
 
-## Contexto del Proyecto
-
-Este trabajo forma parte de la asignatura/taller sobre **Patrones de Diseño y Arquitectura de Software**.  
-Se simula un sistema bancario core con módulos representativos del sector financiero:
+## Simulacion de un sistema bancario core con módulos representativos del sector financiero:
 
 - Gestión de cuentas múltiples  
 - Transacciones por múltiples canales (web, móvil, cajeros, sucursales)  
@@ -20,24 +14,7 @@ Se simula un sistema bancario core con módulos representativos del sector finan
   - **KYC** (Know Your Customer) – Onboarding y validación de clientes  
   - **AML** (Anti-Money Laundering) – Monitoreo y detección de operaciones sospechosas  
 
-## Enfoque de Calidad de Software
-
-### Principios SOLID aplicados
-
-- **S** – Single Responsibility Principle  
-  Cada clase tiene una única responsabilidad (validación, creación, persistencia, reglas de negocio, etc.)
-
-- **O** – Open-Closed Principle  
-  Extensible mediante estrategias, factories y polimorfismo sin modificar código existente
-
-- **L** – Liskov Substitution Principle  
-  Subclases sustituibles sin romper el comportamiento esperado
-
-- **I** – Interface Segregation Principle  
-  Interfaces pequeñas y específicas en lugar de interfaces grandes y generales
-
-- **D** – Dependency Inversion Principle  
-  Dependencia de abstracciones (interfaces) en lugar de implementaciones concretas
+## Enfoque de Calidad de Software con implementacion de principios SOLID aplicados
 
 ### Patrones de diseño implementados
 
