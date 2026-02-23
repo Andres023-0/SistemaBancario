@@ -1,5 +1,9 @@
 # Patrones - Sistema Bancario Core
 
+#CREADO POR:
+#BRAYAN ANDRES CAÑAS LEON
+#JUAN SEBASTIAN NIÑO FORERO
+
 Este proyecto académico simula componentes clave de un entorno bancario moderno, con enfoque especial en procesos de **cumplimiento regulatorio** (KYC y AML) en tiempo real.
 
 **Objetivo principal**  
