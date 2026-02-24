@@ -5,13 +5,13 @@ BRAYAN ANDRES CAÑAS LEON / JUAN SEBASTIAN NIÑO FORERO
 
 
 -------------------------------
+# Simulacion de un Sistema Bancario:
 
-Este proyecto académico simula componentes clave de un entorno bancario moderno, con enfoque especial en procesos de **cumplimiento regulatorio** (KYC y AML) en tiempo real.
 
-**Objetivo principal**  
-Demostrar la aplicación práctica de **principios SOLID** y **patrones de diseño** para construir software de calidad en un contexto financiero regulado, eliminando code smells comunes y logrando un diseño modular, mantenible y extensible.
+# **Objetivo principal**  
+Este proyecto académico simula componentes clave de un entorno bancario moderno, con enfoque especial en procesos de **cumplimiento regulatorio** (KYC y AML) en tiempo real, demostrando la aplicación práctica de **principios SOLID** y **patrones de diseño** para construir software de calidad en un contexto financiero regulado, eliminando code smells comunes y logrando un diseño modular, mantenible y extensible.
 
-## Simulacion de un sistema bancario core con módulos representativos del sector financiero:
+### módulos representativos del sector financiero:
 
 - Gestión de cuentas múltiples  
 - Transacciones por múltiples canales (web, móvil, cajeros, sucursales)  
@@ -20,9 +20,9 @@ Demostrar la aplicación práctica de **principios SOLID** y **patrones de dise�
   - **KYC** (Know Your Customer) – Onboarding y validación de clientes  
   - **AML** (Anti-Money Laundering) – Monitoreo y detección de operaciones sospechosas  
 
-## Enfoque de Calidad de Software con implementacion de principios SOLID aplicados
+# Enfoque de Calidad de Software con implementacion de principios SOLID aplicados
 
-### Patrones de diseño implementados
+## Patrones de diseño implementados
 
 - **Patron Singleton** → Apoyados en la recomendacion (Parámetros regulatorios, tasas de interés, límites KYC/AML, URLs de APIs, timeouts)
 - **Factory Method / Abstract Factory** → Creación controlada de entidades (Cliente, Cuenta, Transacción)  
