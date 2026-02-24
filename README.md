@@ -28,9 +28,9 @@ Demostrar la aplicación práctica de **principios SOLID** y **patrones de dise�
 ### Diagrama UML - Patrón Singleton en Sistema Bancario
 
 #Este diagrama modela específicamente el patrón Singleton aplicado al módulo de detección de fraude, mostrando cómo se garantiza una única configuración regulatoria global (KYC/AML) y logging centralizado en un entorno bancario concurrente. 
+# Se utilizo mermaid con direction TB para el grafico en uml
 
-#utilizo mermaid con direction TB para el grafico en uml
-
+-----------------------
 classDiagram
      direction TB
 
@@ -71,5 +71,5 @@ classDiagram
     DetectorFraudeService --> Transaccion : "procesa"
     DetectorFraudeService --> LoggerBancario : "usa LoggerBancario.INSTANCE"
 
-    note for ConfiguracionBancaria "Singleton recomendado (Joshua Bloch)\nThread-safe por JVM\nUsado en KYC, AML y tasas regulatorias"
+------------------------------
 
