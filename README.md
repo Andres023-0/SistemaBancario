@@ -30,7 +30,8 @@ Este proyecto académico simula componentes clave de un entorno bancario moderno
 
 # Diagrama UML - Patrón Singleton en Sistema Bancario
 
-### Este diagrama modela específicamente el patrón Singleton aplicado al módulo de detección de fraude, mostrando cómo se garantiza una única configuración regulatoria global (KYC/AML) y logging centralizado en un entorno bancario concurrente. 
+Este diagrama modela específicamente el patrón Singleton aplicado al módulo de detección de fraude, mostrando cómo se garantiza una única configuración regulatoria global (KYC/AML) y logging centralizado en un entorno bancario concurrente. 
+
 ### Se utilizo mermaid con direction TB para el grafico en uml
 
 -----------------------
