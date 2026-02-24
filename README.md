@@ -21,21 +21,55 @@ Demostrar la aplicación práctica de **principios SOLID** y **patrones de dise�
 
 ### Patrones de diseño implementados
 
+- **Patron Singleton** → Apoyados en la recomendacion (Parámetros regulatorios, tasas de interés, límites KYC/AML, URLs de APIs, timeouts)
 - **Factory Method / Abstract Factory** → Creación controlada de entidades (Cliente, Cuenta, Transacción)  
-- **Strategy** → Diferentes algoritmos de detección AML según tipo de transacción o perfil de riesgo  
-- **Repository** → Abstracción de acceso a datos (in-memory para simulación)  
-- **Specification / Validator** → Reglas de validación KYC reutilizables y componibles  
-- **DTO** → Transferencia limpia de datos entre capas  
-- **Facade** (opcional) → Interfaz simplificada para procesos complejos de onboarding  
 
-### Code Smells eliminados / refactorizados
 
-- Long Parameter List  
-- Duplicate Code  
-- Primitive Obsession  
-- Data Clumps  
-- Large Method / God Method  
-- Feature Envy  
-- Acoplamiento alto entre capas  
+### Diagrama UML - Patrón Singleton en Sistema Bancario
 
-## Estructura del Código (Clean Architecture)
+#Este diagrama modela específicamente el patrón Singleton aplicado al módulo de detección de fraude, mostrando cómo se garantiza una única configuración regulatoria global (KYC/AML) y logging centralizado en un entorno bancario concurrente. 
+
+#utilizo mermaid con direction TB para el grafico en uml
+
+- classDiagram
+     direction TB
+
+    class ConfiguracionBancaria {
+        <<enum>>
+        +INSTANCE : ConfiguracionBancaria
+        -propiedades : Properties
+        -tasasInteres : Map~String, BigDecimal~
+        -paisesKYCAltaRiesgo : Set~String~
+        -ConfiguracionBancaria()
+        +getPropiedad(clave : String) String
+        +getTasaInteres(tipoProducto : String) BigDecimal
+        +esPaisAltaRiesgo(pais : String) boolean
+        +cargarConfiguracion()
+        +cargarTasasYReglasRegulatorias()
+    }
+
+    class DetectorFraudeService {
+        +evaluarTransaccion(tx : Transaccion)
+    }
+
+    class Transaccion {
+        +id : Long
+        +monto : BigDecimal
+        +paisOrigen : String
+        +tipoProducto : String
+        +getPaisOrigen() String
+        +getTipoProducto() String
+    }
+
+    class LoggerBancario {
+        <<enum>>
+        +INSTANCE : LoggerBancario
+        -log( mensaje : String, nivel : String )
+    }
+
+    DetectorFraudeService --> ConfiguracionBancaria : "usa ConfiguracionBancaria.INSTANCE"
+    DetectorFraudeService --> Transaccion : "procesa"
+    DetectorFraudeService --> LoggerBancario : "usa LoggerBancario.INSTANCE"
+
+    note for ConfiguracionBancaria "Singleton recomendado (Joshua Bloch)\nThread-safe por JVM\nUsado en KYC, AML y tasas regulatorias"
+
