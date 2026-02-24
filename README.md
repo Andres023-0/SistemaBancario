@@ -31,7 +31,7 @@ Demostrar la aplicación práctica de **principios SOLID** y **patrones de dise�
 
 #utilizo mermaid con direction TB para el grafico en uml
 
-- classDiagram
+classDiagram
      direction TB
 
     class ConfiguracionBancaria {
