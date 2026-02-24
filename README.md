@@ -36,44 +36,94 @@ Este diagrama modela específicamente el patrón Singleton aplicado al módulo d
 
 -----------------------
 classDiagram
-     direction TB
-
+    direction TB
+    
+    %% ENTIDADES PRINCIPALES DEL BANCO
+    class Banco {
+        +nombre : String
+        +nit : String
+        +cuentas : List~Cuenta~
+        +clientes : List~Cliente~
+    }
+    
+    class Cliente {
+        <<abstract>>
+        +id : Long
+        +nombre : String
+        +identificacion : String
+        +direccion : String
+    }
+    
+    class PersonaNatural {
+        +tipoDocumento : String
+        +numeroDocumento : String
+    }
+    
+    class PersonaJuridica {
+        +nit : String
+        +representanteLegal : String
+    }
+    
+    class Cuenta {
+        <<abstract>>
+        +numeroCuenta : String
+        +saldo : BigDecimal
+        +cliente : Cliente
+        +transacciones : List~Transaccion~
+    }
+    
+    class CuentaCorriente {
+        +sobregiroPermitido : BigDecimal
+    }
+    
+    class CuentaAhorro {
+        +tasaInteres : BigDecimal
+    }
+    
+    %% MÓDULO FRAUDE (tu diagrama Singleton integrado)
+    class DetectorFraudeService {
+        +evaluarTransaccion(tx : Transaccion) : Riesgo
+    }
+    
     class ConfiguracionBancaria {
         <<enum>>
         +INSTANCE : ConfiguracionBancaria
-        -propiedades : Properties
         -tasasInteres : Map~String, BigDecimal~
         -paisesKYCAltaRiesgo : Set~String~
-        -ConfiguracionBancaria()
-        +getPropiedad(clave : String) String
-        +getTasaInteres(tipoProducto : String) BigDecimal
         +esPaisAltaRiesgo(pais : String) boolean
-        +cargarConfiguracion()
-        +cargarTasasYReglasRegulatorias()
+        +getTasaInteres(tipo : String) BigDecimal
     }
-
-    class DetectorFraudeService {
-        +evaluarTransaccion(tx : Transaccion)
+    
+    class LoggerBancario {
+        <<enum>>
+        +INSTANCE : LoggerBancario
     }
-
+    
     class Transaccion {
         +id : Long
         +monto : BigDecimal
         +paisOrigen : String
-        +tipoProducto : String
-        +getPaisOrigen() String
-        +getTipoProducto() String
+        +tipo : TipoTransaccion
+        +cuentaOrigen : Cuenta
+        +cuentaDestino : Cuenta
     }
+    
+    %% RELACIONES GLOBALES
+    Banco ||--o{ Cliente : "gestiona"
+    Banco ||--o{ Cuenta : "ofrece"
+    Cliente ||--o{ Cuenta : "posee"
+    Cuenta ||--o{ Transaccion : "genera"
+    
+    Cliente <|-- PersonaNatural
+    Cliente <|-- PersonaJuridica
+    Cuenta <|-- CuentaCorriente
+    Cuenta <|-- CuentaAhorro
+    
+    %% INTEGRACIÓN MÓDULO FRAUDE
+    DetectorFraudeService --> ConfiguracionBancaria : "usa INSTANCE"
+    DetectorFraudeService --> Transaccion : "evalua"
+    DetectorFraudeService --> LoggerBancario : "audita"
 
-    class LoggerBancario {
-        <<enum>>
-        +INSTANCE : LoggerBancario
-        -log( mensaje : String, nivel : String )
-    }
-
-    DetectorFraudeService --> ConfiguracionBancaria : "usa ConfiguracionBancaria.INSTANCE"
-    DetectorFraudeService --> Transaccion : "procesa"
-    DetectorFraudeService --> LoggerBancario : "usa LoggerBancario.INSTANCE"
 
 ------------------------------
 
