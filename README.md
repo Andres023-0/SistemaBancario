@@ -1,7 +1,10 @@
 # Patrones - Sistema Bancario Core
 
-#CREADO POR:
+# CREADO POR:
 BRAYAN ANDRES CAÑAS LEON / JUAN SEBASTIAN NIÑO FORERO
+
+
+-------------------------------
 
 Este proyecto académico simula componentes clave de un entorno bancario moderno, con enfoque especial en procesos de **cumplimiento regulatorio** (KYC y AML) en tiempo real.
 
@@ -25,10 +28,10 @@ Demostrar la aplicación práctica de **principios SOLID** y **patrones de dise�
 - **Factory Method / Abstract Factory** → Creación controlada de entidades (Cliente, Cuenta, Transacción)  
 
 
-### Diagrama UML - Patrón Singleton en Sistema Bancario
+# Diagrama UML - Patrón Singleton en Sistema Bancario
 
-#Este diagrama modela específicamente el patrón Singleton aplicado al módulo de detección de fraude, mostrando cómo se garantiza una única configuración regulatoria global (KYC/AML) y logging centralizado en un entorno bancario concurrente. 
-# Se utilizo mermaid con direction TB para el grafico en uml
+### Este diagrama modela específicamente el patrón Singleton aplicado al módulo de detección de fraude, mostrando cómo se garantiza una única configuración regulatoria global (KYC/AML) y logging centralizado en un entorno bancario concurrente. 
+### Se utilizo mermaid con direction TB para el grafico en uml
 
 -----------------------
 classDiagram
