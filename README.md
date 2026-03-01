@@ -34,99 +34,181 @@ Este diagrama modela específicamente el patrón Singleton aplicado al módulo d
 
 ### Se utilizo mermaid con direction TB para el grafico en uml
 --------------------------------------------
+     
+                +----------------------+   1      0..*   +----------------------+
+    |        Banco         |-----------------|       Sucursal       |
+    +----------------------+                 +----------------------+
+    | -nombre : String     |                 | -codigo : String     |
+    | -nit : String        |                 | -direccion : String  |
+    +----------------------+                 +----------------------+
+    | +crearSucursal()     |                 | +procesarTransac-    |
+    | +registrarCliente()  |                 |   cion()             |
+    | +abrirCuenta()       |                 +----------------------+
+    +----------------------+
+             | 1
+             | 0..*
+             v
+    +----------------------+
+    |     <<abstract>>     |
+    |        Cliente       |
+    +----------------------+
+    | -id : Long           |
+    | -nombre : String     |
+    | -identificacion :    |
+    |   String             |
+    +----------------------+
+             ^
+             |
+       +-----+-----+
+       |           |
+    +------------------+  +------------------+
+    |  PersonaNatural  |  |  PersonaJuridica |
+    +------------------+  +------------------+
+    | -tipoDocumento : |  | -nit : String    |
+    |   String         |  | -razonSocial :   |
+    | -numeroDocumento:|  |   String         |
+    |   String         |  +------------------+
+    +------------------+
+             | 1
+             | 0..*
+             v
+    +----------------------+
+    |     <<abstract>>     |
+    |        Cuenta        |
+    +----------------------+
+    | -numeroCuenta :      |
+    |   String             |
+    | -saldo : BigDecimal  |
+    +----------------------+
+             ^
+             |
+       +-----+-----+
+       |           |
+    +------------------+  +------------------+
+    |  CuentaCorriente |  |  CuentaAhorros   |
+    +------------------+  +------------------+
+    | -sobregiroMaximo:|  | -saldo :         |   
+    |   BigDecimal     |  |   BigDecimal     |
+    | -tasa de interes:|  | -tasademanejo:   |
+    |   BigDecimal     |  |   BigDecimal     |
+    +------------------+  +------------------+
     
-    +--------------------+       1     +-------------------+       *     +-------------------+
-    |      Banco         |-------------|     Sucursal      |-------------|     Cliente       |
-    +--------------------+             +-------------------+             +-------------------+
-    | -nombre: String    |             | -nombre: String   |             | -id: String       |
-    | -direccion: String |             | -direccion: String|             | -nombre: String   |
-    +--------------------+             +-------------------+             | -documento: String|
-                                        | +abrirCuenta()   |             | -telefono: String |
-                                        +-------------------+             +-------------------+
-                                                     ↑                               ↑
-                                                     |                               |
-                                                     |                               |
-                                          +------------------+             +-------------------+
-                                          |     Cuenta       |             |    Transaccion    |
-                                          +------------------+             +-------------------+
-                                          | -numero: String  |1..*         | -id: String       |
-                                          | -saldo: double   |-------------| -fecha: Date      |
-                                          | -tipo: String    |             | -monto: double    |
-                                          +------------------+             | -tipo: String     |
-                                          | +depositar()     |             |   (dep/reti/transfer)|
-                                          | +retirar()       |             +-------------------+
-                                          | +consultarSaldo()|             | +registrar()      |
-                                          +------------------+             +-------------------+
-                                                     ^
-                                                     |
-                                   +-----------------+-----------------+
-                                   |                                   |
-                     +---------------------+             +---------------------+
-                     |   CuentaAhorros     |             |  CuentaCorriente    |
-                     +---------------------+             +---------------------+
-                     | -tasaInteres: double|             | -limiteSobregiro: double|
-                     | +calcularInteres()  |             | +permitirSobregiro() |
-                     +---------------------+             +---------------------+
------------------------------------------
 
-    direction TB 
-    
-      class Banco {
-      +nombre : string
-      +direccion : string
-    }
-    
-    class Sucursal {
-      +nombre : string
-      +ubicacion : string
-    }
-    
-    class Cliente {
-      +nombre : string
-      +documento : string
-      +telefono : string
-    }
-    
-    class Cuenta {
-      +numero : string
-      +saldo : double
-      +tipo : string
-    }
-    
-    class CuentaAhorros {
-      +tasaInteres : double
-    }
-    
-    class CuentaCorriente {
-      +sobregiro : double
-    }
-    
-    class Transaccion {
-      +fecha : string
-      +monto : double
-      +tipo : string
-      +descripcion : string
-    }
-    
-    class Tarjeta {
-      +numero : string
-      +fechaVencimiento : string
-      +tipo : string
-    }
-    
-    ' Relaciones (estilo hotel: simple y claro)
-    Banco "1" *-- "0..*" Sucursal
-    Sucursal "1" o-- "0..*" Cuenta
-    Cliente "1" *-- "0..*" Cuenta     ' un cliente puede tener varias cuentas
-    Cuenta "1" o-- "0..*" Transaccion
-    
-    Cuenta <|-- CuentaAhorros
-    Cuenta <|-- CuentaCorriente
-    
-    Cliente "1" o-- "0..*" Tarjeta    ' tarjetas asociadas al cliente
-    
-    ' Métodos mínimos (como en el hotel)
-    Cuenta ..> +depositar()
-    Cuenta ..> +retirar()
-    Cuenta ..> +consultarSaldo()
-------------------------------
+                            ===== FACTORY METHOD =====
+        
+                            +----------------------+
+                            |   <<abstract>>       |
+                            |    CuentaCreator     |
+                            +----------------------+
+                            | +crearCuenta():Cuenta|
+                            | +abrirCuenta()       |
+                            +----------------------+
+                                      ^
+                                      |
+                     +----------------+----------------+
+                     |                                 |
+        +----------------------+          +----------------------+
+        |   CreatorAhorros     |          |  CreatorCorriente    |
+        +----------------------+          +----------------------+
+        | +crearCuenta():      |          | +crearCuenta():      |
+        |   CuentaAhorros      |          |   CuentaCorriente    |
+        +----------------------+          +----------------------+
+-----------------------------------------
+      
+        classDiagram
+        direction TB
+        
+        %% MÓDULO BANCO Y SUCURSALES
+        class Banco {
+            -nombre : String
+            -nit : String
+            +crearSucursal()
+            +registrarCliente()
+            +abrirCuenta(tipo : String, cliente : Cliente)
+        }
+        
+        class Sucursal {
+            -codigo : String
+            -direccion : String
+            +procesarTransaccion()
+            +consultarCajeros()
+        }
+        
+        %% FACTORY METHOD - CREACION CUENTAS
+        class CreadorCuentas {
+            <<abstract>>
+            +crearCuenta(tipo : String) Cuenta
+        }
+        
+        class CreadorCuentasNatural {
+            +crearCuenta(tipo : String) Cuenta
+        }
+        
+        class CreadorCuentasJuridica {
+            +crearCuenta(tipo : String) Cuenta
+        }
+        
+        %% MÓDULO CLIENTES
+        class Cliente {
+            <<abstract>>
+            +id : Long
+            +nombre : String
+            +identificacion : String
+            +telefono : String
+        }
+        
+        class PersonaNatural {
+            +numeroDocumento : String
+        }
+        
+        class PersonaJuridica {
+            +nit : String
+            +razonSocial : String
+        }
+        
+        %% MÓDULO CUENTAS (PRODUCTOS del Factory)
+        class Cuenta {
+            <<interface>>
+            +numeroCuenta : String
+            +saldo : BigDecimal
+            +depositar(monto : BigDecimal)
+        }
+        
+        class CuentaCorriente {
+            +sobregiroMaximo : BigDecimal
+            +tasa de interes: double
+        }
+        
+        class CuentaAhorros {
+            +saldo : BigDecimal
+            +tasademanejo : BigDecimal
+        }
+        
+        %% TRANSACCIONES
+        class Transaccion {
+            +id : Long
+            +monto : BigDecimal
+            +tipo : String
+        }
+        
+        %% RELACIONES COMPLETAS
+        Banco ||--o{ Sucursal : "gestiona"
+        Banco --> CreadorCuentas : "injeta fábrica"
+        
+        Cliente <|-- PersonaNatural
+        Cliente <|-- PersonaJuridica
+        Cliente ||--o{ Cuenta : "posee"
+        
+        CreadorCuentas <|-- CreadorCuentasNatural
+        CreadorCuentas <|-- CreadorCuentasJuridica
+        CreadorCuentas ..> Cuenta : "crea"
+        
+        Cuenta <|-- CuentaCorriente
+        Cuenta <|-- CuentaAhorros
+        Cuenta ||--o{ Transaccion : "genera"
+        
+        Sucursal ||--o{ Transaccion : "procesa"
+        ---- APLICACION DEL FACTORY METHOD  ----->  crearCuenta() abstracto"
+      
+      Cuenta ..> +consultarSaldo()
+  ------------------------------
