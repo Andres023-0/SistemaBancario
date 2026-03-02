@@ -217,9 +217,12 @@ Este diagrama modela específicamente el patrón Singleton aplicado al módulo d
 ### El patrón Singleton nos garantiza que una clase tenga exactamente una instancia y proporciona un punto de acceso global a ella.
 
 
+Patron Singleton.docx
 
-
+  ------------------------------
+  
 # IMPLEMENTACION DE PATRON FACTORY METHOD
 
 ### En el proyecto "Sistema Bancario Core", el procesamiento de transacciones se realiza en transaccion.py con condicionales para decidir qué hacer según el canal (web, móvil, cajero) y tipo (depósito, retiro, transferencia):
 
+Patron Factory.docx
