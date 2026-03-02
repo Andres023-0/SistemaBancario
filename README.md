@@ -28,14 +28,14 @@ Este proyecto académico simula componentes clave de un entorno bancario moderno
 - **Factory Method / Abstract Factory** → Creación controlada de entidades (Cliente, Cuenta, Transacción)  
 
 
-# Diagrama UML - Patrón Singleton en Sistema Bancario
+# Diagrama UML Sistema Bancario
 
 Este diagrama modela específicamente el patrón Singleton aplicado al módulo de detección de fraude, mostrando cómo se garantiza una única configuración regulatoria global (KYC/AML) y logging centralizado en un entorno bancario concurrente. 
 
 ### Se utilizo mermaid con direction TB para el grafico en uml
 --------------------------------------------
      
-                +----------------------+   1      0..*   +----------------------+
+    +----------------------+   1      0..*   +----------------------+
     |        Banco         |-----------------|       Sucursal       |
     +----------------------+                 +----------------------+
     | -nombre : String     |                 | -codigo : String     |
@@ -212,3 +212,13 @@ Este diagrama modela específicamente el patrón Singleton aplicado al módulo d
       
       Cuenta ..> +consultarSaldo()
   ------------------------------
+# IMPLEMENTACION DE PATRON SINGLETON
+
+### El patrón Singleton nos garantiza que una clase tenga exactamente una instancia y proporciona un punto de acceso global a ella.
+
+
+
+# IMPLEMENTACION DE PATRON FACTORY METHOD
+
+### En el proyecto "Sistema Bancario Core", el procesamiento de transacciones se realiza en transaccion.py con condicionales para decidir qué hacer según el canal (web, móvil, cajero) y tipo (depósito, retiro, transferencia):
+
