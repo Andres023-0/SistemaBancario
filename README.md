@@ -115,102 +115,135 @@ Este diagrama modela específicamente el patrón Singleton aplicado al módulo d
         +----------------------+          +----------------------+
 -----------------------------------------
       
-        classDiagram
-        direction TB
-        
-        %% MÓDULO BANCO Y SUCURSALES
-        class Banco {
-            -nombre : String
-            -nit : String
-            +crearSucursal()
-            +registrarCliente()
-            +abrirCuenta(tipo : String, cliente : Cliente)
-        }
-        
-        class Sucursal {
-            -codigo : String
-            -direccion : String
-            +procesarTransaccion()
-            +consultarCajeros()
-        }
-        
-        %% FACTORY METHOD - CREACION CUENTAS
-        class CreadorCuentas {
-            <<abstract>>
-            +crearCuenta(tipo : String) Cuenta
-        }
-        
-        class CreadorCuentasNatural {
-            +crearCuenta(tipo : String) Cuenta
-        }
-        
-        class CreadorCuentasJuridica {
-            +crearCuenta(tipo : String) Cuenta
-        }
-        
-        %% MÓDULO CLIENTES
-        class Cliente {
-            <<abstract>>
-            +id : Long
-            +nombre : String
-            +identificacion : String
-            +telefono : String
-        }
-        
-        class PersonaNatural {
-            +numeroDocumento : String
-        }
-        
-        class PersonaJuridica {
-            +nit : String
-            +razonSocial : String
-        }
-        
-        %% MÓDULO CUENTAS (PRODUCTOS del Factory)
-        class Cuenta {
-            <<interface>>
-            +numeroCuenta : String
-            +saldo : BigDecimal
-            +depositar(monto : BigDecimal)
-        }
-        
-        class CuentaCorriente {
-            +sobregiroMaximo : BigDecimal
-            +tasa de interes: double
-        }
-        
-        class CuentaAhorros {
-            +saldo : BigDecimal
-            +tasademanejo : BigDecimal
-        }
-        
-        %% TRANSACCIONES
-        class Transaccion {
-            +id : Long
-            +monto : BigDecimal
-            +tipo : String
-        }
-        
-        %% RELACIONES COMPLETAS
-        Banco ||--o{ Sucursal : "gestiona"
-        Banco --> CreadorCuentas : "injeta fábrica"
-        
-        Cliente <|-- PersonaNatural
-        Cliente <|-- PersonaJuridica
-        Cliente ||--o{ Cuenta : "posee"
-        
-        CreadorCuentas <|-- CreadorCuentasNatural
-        CreadorCuentas <|-- CreadorCuentasJuridica
-        CreadorCuentas ..> Cuenta : "crea"
-        
-        Cuenta <|-- CuentaCorriente
-        Cuenta <|-- CuentaAhorros
-        Cuenta ||--o{ Transaccion : "genera"
-        
-        Sucursal ||--o{ Transaccion : "procesa"
-        ---- APLICACION DEL FACTORY METHOD  ----->  crearCuenta() abstracto"
-      
-      Cuenta ..> +consultarSaldo()
+       classDiagram
+    direction TB
+    
+    %% MÓDULO BANCO Y SUCURSALES
+    class Banco {
+        -nombre : String
+        -nit : String
+        +crearSucursal()
+        +registrarCliente()
+        +abrirCuenta(tipo : String, cliente : Cliente)
+        +gestionarCanales()
+    }
+    
+    class Sucursal {
+        -codigo : String
+        -direccion : String
+        +procesarTransaccion()
+        +consultarCajeros()
+    }
+    
+    %% CANALES MÚLTIPLES (NUEVO)
+    class CanalAcceso {
+        <<abstract>>
+        +autenticarUsuario()
+        +ejecutarTransaccion()
+    }
+    
+    class AppMovil {
+        +pushNotifications()
+        +biometria()
+    }
+    
+    class WebBanking {
+        +sesionWeb()
+        +transferenciasRapidas()
+    }
+    
+    class CajeroAutomatico {
+        +leerTarjeta()
+        +dispensarEfectivo()
+    }
+    
+    class CallCenter {
+        +atencionHumana()
+        +verificacionTelefonica()
+    }
+    
+    %% FACTORY METHOD - CORREGIDO
+    class CreadorCuentas {
+        <<abstract>>
+        +crearCuenta(tipo : String) Cuenta
+    }
+    
+    class CreadorCuentasNatural {
+        +crearCuenta(tipo : String) Cuenta
+    }
+    
+    class CreadorCuentasJuridica {
+        +crearCuenta(tipo : String) Cuenta
+    }
+    
+    %% CLIENTES - CORREGIDO
+    class Cliente {
+        <<abstract>>
+        +id : Long
+        +nombre : String
+        +identificacion : String
+        +telefono : String
+    }
+    
+    class PersonaNatural {
+        +numeroDocumento : String
+    }
+    
+    class PersonaJuridica {
+        +nit : String
+        +razonSocial : String
+    }
+    
+    %% CUENTAS - CORREGIDAS
+    class Cuenta {
+        <<interface>>
+        +numeroCuenta : String
+        +saldo : BigDecimal
+        +depositar(monto : BigDecimal)
+        +consultarSaldo()
+    }
+    
+    class CuentaCorriente {
+        +sobregiroMaximo : BigDecimal
+        +tasaInteres : double
+    }
+    
+    class CuentaAhorros {
+        +tasaManejo : BigDecimal
+    }
+    
+    %% TRANSACCIONES
+    class Transaccion {
+        +id : Long
+        +monto : BigDecimal
+        +tipo : String
+    }
+    
+    %% RELACIONES COMPLETAS + CANALES
+    Banco ||--o{ Sucursal : "gestiona"
+    Banco ||--o{ CanalAcceso : "ofrece"
+    Banco --> CreadorCuentas : "inyecta"
+    
+    CanalAcceso <|-- AppMovil
+    CanalAcceso <|-- WebBanking
+    CanalAcceso <|-- CajeroAutomatico
+    CanalAcceso <|-- CallCenter
+    
+    Cliente <|-- PersonaNatural
+    Cliente <|-- PersonaJuridica
+    Cliente ||--o{ Cuenta : "posee"
+    
+    CreadorCuentas <|-- CreadorCuentasNatural
+    CreadorCuentas <|-- CreadorCuentasJuridica
+    CreadorCuentas ..> Cuenta : "crea"
+    
+    Cuenta <|-- CuentaCorriente
+    Cuenta <|-- CuentaAhorros
+    Cuenta ||--o{ Transaccion : "genera"
+    
+    Sucursal ||--o{ Transaccion : "procesa"
+    CanalAcceso --> Transaccion : "inicia"
+    
   ------------------------------
 # IMPLEMENTACION DE PATRON SINGLETON
 
