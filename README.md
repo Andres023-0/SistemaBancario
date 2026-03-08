@@ -38,21 +38,21 @@ Se creó una fábrica por canal que produce familias coherentes de Validador, No
 
 # RESUMEN DE ARCHIVOS DEL PROYECTO
 
-    Archivo                  Patrón                  Rol
+        Archivo                  Patrón                  Rol
     ─────────────────────────────────────────────────────────────────────
-    config_banco.py        |  Singleton        |   Configuración global
-    logger.py              |  Singleton        |   Registro de eventos
-    detector_fraude.py     |  Singleton        |   Motor antifraude
-    sucursales_manager.py  |  Singleton        |   Gestión de sucursales
-    operacion.py           |  Factory Method   |   Producto abstracto/concreto
-    operacion_factory.py   |  Factory Method   |   Creador abstracto/concreto
-    canal_factory.py       |  Abstract Factory |   Fábrica + productos por canal
-    transaccion.py         |  3 patrones       |   Orquestador central
-    banco.py               |  Dominio          |   Entidad banco
-    cuenta.py              |  Dominio          |   Entidad cuenta
-    usuario.py             |  Dominio          |   Entidad usuario
-    sucursal.py            |  Dominio          |   Entidad sucursal
-    main.py                |  Cliente          |   Interfaz de consola
+    config_banco.py        │  Singleton        │  Configuración global
+    logger.py              │  Singleton        │  Registro de eventos
+    detector_fraude.py     │  Singleton        │  Motor antifraude
+    sucursales_manager.py  │  Singleton        │  Gestión de sucursales
+    operacion.py           │  Factory Method   │  Producto abstracto/concreto
+    operacion_factory.py   │  Factory Method   │  Creador abstracto/concreto
+    canal_factory.py       │  Abstract Factory │  Fábrica + productos por canal
+    transaccion.py         │  3 patrones       │  Orquestador central
+    banco.py               │  Dominio          │  Entidad banco
+    cuenta.py              │  Dominio          │  Entidad cuenta
+    usuario.py             │  Dominio          │  Entidad usuario
+    sucursal.py            │  Dominio          │  Entidad sucursal
+    main.py                │  Cliente          │  Interfaz de consola
 
 # Diagrama UML Sistema Bancario
 
