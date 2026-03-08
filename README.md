@@ -665,5 +665,5 @@ El diagrama representa la arquitectura del Sistema Bancario Core implementado en
     Transaccion --> CanalFactoryProducer : "consulta"
     
   ------------------------------
-# Documentacion de las implementaciones
+
 
