@@ -11,7 +11,7 @@ BRAYAN ANDRES CAÑAS LEON / JUAN SEBASTIAN NIÑO FORERO
 
 Este proyecto académico simula componentes clave de un entorno bancario moderno, con enfoque especial en procesos de **cumplimiento regulatorio** (KYC y AML) en tiempo real, demostrando la aplicación práctica de **principios SOLID** y **cuatro patrones de diseño creacionales** (Singleton, Factory Method, Abstract Factory y Builder) para construir software de calidad en un contexto financiero regulado, eliminando code smells comunes y logrando un diseño modular, mantenible y extensible.
 
-----
+---
 
 ### Módulos representativos del sector financiero
 
@@ -737,7 +737,6 @@ CuentaBuilder ..> Cuenta : "construye"
 CuentaBuilder --> Usuario : "asocia"
 CuentaBuilder --> Sucursal : "asocia"
 ```
-    
   ------------------------------
 # Documentacion de las implementaciones semana a semana 
 
