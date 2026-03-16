@@ -397,7 +397,7 @@ El diagrama representa la arquitectura del Sistema Bancario Core implementado en
 
 ## classDiagram (Mermaid)
 
-```mermaid
+```
 classDiagram
 direction TB
 
