@@ -49,9 +49,9 @@ Este proyecto académico simula componentes clave de un entorno bancario moderno
 | `operacion.py`            | Factory Method      | Productos de operaciones bancarias                 |
 | `operacion_factory.py`    | Factory Method      | Creadores de operaciones                           |
 | `canal_factory.py`        | Abstract Factory    | Fábricas y productos por canal (Web/Móvil/Cajero)  |
-| `notificador_adapter.py`  | **Adapter**         | Adaptadores + servicios externos de notificación   |
+| `notificador_adapter.py`  | Adapter             | Adaptadores + servicios externos de notificación   |
 | `cuenta_builder.py`       | Builder             | Construcción fluida y segura de cuentas            |
-| `transaccion.py`          | **5 patrones**      | Orquestador central de transacciones               |
+| `transaccion.py`          | 5 patrones          | Orquestador central de transacciones               |
 | `banco.py`                | Dominio             | Entidad principal del banco                        |
 | `cuenta.py`               | Dominio             | Gestión de saldo y transacciones                   |
 | `usuario.py`              | Dominio             | Entidad usuario + KYC                              |
@@ -383,27 +383,27 @@ El diagrama representa la arquitectura del Sistema Bancario Core implementado en
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           CLASE ORQUESTADORA — Transaccion (integra los 5 patrones)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-               ┌─────────────────────────────────────────┐
-               │ Transaccion                             │
-               ├─────────────────────────────────────────┤
-               │ FACTORIES : Dict [Factory Method]       │
-               │ CANALES_VALIDOS : Set                   │
-               ├─────────────────────────────────────────┤
-               │ + procesar(...)                         │
-               │                                         │
-               │ Paso 1 ── Abstract Factory              │ → Validación y límites del canal
-               │ Paso 2 ── Singleton                     │ → Detector de fraude
-               │ Paso 3 ── Factory Method                │ → Ejecuta la operación
-               │ Paso 4 ── Abstract Factory              │ → Obtiene Notificador
-               │ Paso 5 ── Adapter                       │ → Notificación externa
-               │   NotificadorAdapterProducer.get_adapter(canal, usuario)
-               │   → notificador.notificar(...)          │
-               └─────────────────────────────────────────┘
+               ┌─────────────────────────────────────────────┐
+               │ Transaccion                                 │
+               ├─────────────────────────────────────────────┤
+               │ FACTORIES : Dict          [Factory Method]  │
+               │ CANALES_VALIDOS : Set                       │
+               ├─────────────────────────────────────────────┤
+               │ + procesar(cuenta_origen, monto, canal, ...)│
+               │                                             │
+               │ Paso 1 ── Abstract Factory                  │ → Validación y límitesdelcanal
+               │ Paso 2 ── Singleton                         │ → Detector de fraude
+               │ Paso 3 ── Factory Method                    │ → Ejecuta la operación
+               │ Paso 4 ── Abstract Factory                  │ → Obtiene el Notificador
+               │ Paso 5 ── Adapter                           │ → Notificación externa
+               │  NotificadorAdapterProducer.get_adapter(...)│
+               │   → notificador.notificar(...)              │
+               └─────────────────────────────────────────────┘
                      │
                      ▼
-          [Singleton]     [FactoryMethod]  [AbstractFactory] [Adapter]
-          DetectorFraude  Operacion        CanalFactory      Servicios externos
-                          Factory          Producer          (SMS, Email, Voucher)
+          [Singleton] [Factory Method] [Abstract Factory] [Adapter]
+          DetectorFraude   OperacionFactory   CanalFactoryProducer   Servicios externos
+                                                              (SMS, Email, Voucher)
 ```
 
 ---
