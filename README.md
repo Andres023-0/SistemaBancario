@@ -1,77 +1,62 @@
 # Patrones - Sistema Bancario Core
-
 **CREADO POR:**  
 BRAYAN ANDRES CAÑAS LEON / JUAN SEBASTIAN NIÑO FORERO
 
 ---
-
 ## Simulación de un Sistema Bancario
-
 ### Objetivo principal
-
-Este proyecto académico simula componentes clave de un entorno bancario moderno, con enfoque especial en procesos de **cumplimiento regulatorio** (KYC y AML) en tiempo real, demostrando la aplicación práctica de **principios SOLID** y **cuatro patrones de diseño creacionales** (Singleton, Factory Method, Abstract Factory y Builder) para construir software de calidad en un contexto financiero regulado, eliminando code smells comunes y logrando un diseño modular, mantenible y extensible.
+Este proyecto académico simula componentes clave de un entorno bancario moderno, con enfoque especial en procesos de **cumplimiento regulatorio** (KYC y AML) en tiempo real, demostrando la aplicación práctica de **principios SOLID** y **cinco patrones de diseño** (Singleton, Factory Method, Abstract Factory, Builder y Adapter) para construir software de calidad en un contexto financiero regulado, eliminando code smells comunes y logrando un diseño modular, mantenible y extensible.
 
 ---
-
 ### Módulos representativos del sector financiero
-
 - **Gestión de cuentas múltiples**  
   Cuentas corriente y ahorros asociadas a usuarios verificados, con historial de transacciones y saldo en `Decimal` para precisión financiera.
-
 - **Transacciones por múltiples canales**  
   Web, móvil y cajero procesan operaciones con reglas propias de límites, notificaciones y restricciones por canal mediante Abstract Factory.
-
 - **Detección de fraude en tiempo real**  
   `DetectorFraude` evalúa 5 reglas antes de aprobar cada transacción: límite AML, alta frecuencia, saldo crítico, canal inusual y cuenta sin historial.
-
 - **KYC**  
   `Usuario` requiere `verificado_kyc = True` antes de abrir cualquier cuenta, bloqueando el onboarding de clientes no validados.
-
 - **AML**  
   `ConfigBanco` centraliza los umbrales: $10.000 por transacción, máximo 5 operaciones en 5 minutos y saldo mínimo de $1.000.
-
 - **Construcción de cuentas con Builder**  
   `CuentaBuilder` garantiza que cada cuenta se construya con todos sus datos válidos (número, tipo, saldo, usuario con KYC verificado y sucursal) antes de persistir, mediante una API fluida encadenada.
 
 ---
-
 ## Enfoque de Calidad de Software con implementación de principios SOLID
-
 ### Patrones de diseño implementados
-
 - **Singleton:**  
   Se centralizó la configuración, logs, detección de fraude y sucursales en instancias únicas thread-safe usando Double-Checked Locking, garantizando consistencia global sin duplicar valores en el sistema.
-
 - **Factory Method:**  
   Se delegó la creación de operaciones bancarias a fábricas concretas por tipo, eliminando condicionales en `Transaccion.procesar()` y permitiendo agregar nuevas operaciones sin modificar código existente.
-
 - **Abstract Factory:**  
   Se creó una fábrica por canal que produce familias coherentes de `Validador`, `Notificador` y `LimiteCanal`, garantizando reglas y comportamientos consistentes para Web, Móvil y Cajero.
-
 - **Builder:**  
-  Se implementó un Fluent Builder para la creación de cuentas bancarias, desacoplando el proceso de construcción de su representación final. `CuentaBuilder` encadena los pasos de configuración (número, tipo, saldo, usuario, sucursal) y garantiza en `build()` que todos los datos obligatorios estén presentes antes de instanciar la `Cuenta`, asociarla al `Usuario` y registrarla en la `Sucursal`.
+  Se implementó un Fluent Builder para la creación de cuentas bancarias, desacoplando el proceso de construcción de su representación final. `CuentaBuilder` encadena los pasos de configuración y garantiza en `build()` que todos los datos obligatorios estén presentes.
+- **Adapter:**  
+  Se integraron servicios externos de notificación (SMS, Email, Push y Voucher) con interfaces incompatibles mediante adapters. Esto permite que el sistema use una interfaz unificada (`Notificador`) mientras delega en servicios simulados de terceros (Twilio, SendGrid, Firebase, impresora de cajero), mejorando la extensibilidad y manteniendo el desacoplamiento.
 
 ---
-
 ## Resumen de archivos del proyecto
 
 ```
     Archivo                  Patrón                  Rol
 ─────────────────────────────────────────────────────────────────────────────
-config_banco.py        │  Singleton        │  Configuración global del sistema
-logger.py              │  Singleton        │  Registro de eventos
-detector_fraude.py     │  Singleton        │  Motor antifraude (5 reglas AML)
-sucursales_manager.py  │  Singleton        │  Gestión de sucursales
-operacion.py           │  Factory Method   │  Producto abstracto/concreto
-operacion_factory.py   │  Factory Method   │  Creador abstracto/concreto
-canal_factory.py       │  Abstract Factory │  Fábrica + productos por canal
-transaccion.py         │  4 patrones       │  Orquestador central
-cuenta_builder.py      │  Builder          │  Constructor fluent de cuentas
-banco.py               │  Dominio          │  Entidad banco + búsquedas
-cuenta.py              │  Dominio          │  Entidad cuenta
-usuario.py             │  Dominio          │  Entidad usuario
-sucursal.py            │  Dominio          │  Entidad sucursal
-main.py                │  Cliente          │  Interfaz de consola
+config_banco.py            │ Singleton           │ Configuración global
+logger.py                  │ Singleton           │ Registro de eventos
+detector_fraude.py         │ Singleton           │ Motor antifraude (5 reglas)
+sucursales_manager.py      │ Singleton           │ Gestión de sucursales
+operacion.py               │ Factory Method      │ Producto abstracto/concreto
+operacion_factory.py       │ Factory Method      │ Creador abstracto/concreto
+canal_factory.py           │ Abstract Factory    │ Fábrica + productos por canal
+notificador_adapter.py     │ Adapter             │ Adaptadores de notificación + Adaptees
+cuenta_builder.py          │ Builder             │ Constructor fluent de cuentas
+transaccion.py             │ 5 patrones          │ Orquestador central
+banco.py                   │ Dominio             │ Entidad banco + búsquedas
+cuenta.py                  │ Dominio             │ Entidad cuenta
+usuario.py                 │ Dominio             │ Entidad usuario
+sucursal.py                │ Dominio             │ Entidad sucursal
+main.py                    │ Cliente             │ Interfaz de consola
 ```
 
 ---
@@ -354,6 +339,46 @@ El diagrama representa la arquitectura del Sistema Bancario Core implementado en
   │ValidadorCaj │           │NotifCajero  │          │LimiteCajero │
   └─────────────┘           └─────────────┘          └─────────────┘
 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ PATRÓN ADAPTER ◄────────────────────────────── [patron_5_adapter]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+               ┌────────────────────────────┐
+               │ <<interface>>              │ archivo: notificador_adapter.py
+               │ Notificador (Target)       │
+               ├────────────────────────────┤
+               │ + notificar(tipo, monto,   │
+               │   cuenta_numero)           │
+               └────────────────────────────┘
+                             ▲
+                             │ implementa
+        ┌────────────────────┼────────────────────┐
+        │                    │                    │
+┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐
+│ SMSAdapter       │ │ EmailAdapter     │ │ VoucherAdapter   │
+├──────────────────┤ ├──────────────────┤ ├──────────────────┤
+│ - _servicio      │ │ - _servicio      │ │ - _servicio      │
+│ - _numero_celular│ │ - _correo_destino│ │                  │
+├──────────────────┤ ├──────────────────┤ ├──────────────────┤
+│ + notificar()    │ │ + notificar()    │ │ + notificar()    │
+│   → send_sms()   │ │   → enviar_correo│ │   → imprimir_    │
+└──────────────────┘ └──────────────────┘ │   voucher()      │
+                                          └──────────────────┘
+
+               Adaptees (interfaces incompatibles)
+        ┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐
+        │ ServicioSMS      │ │ ServicioEmail    │ │ ServicioVoucher  │
+        │ (Twilio simulado)│ │ (SendGrid sim.)  │ │ Físico (Cajero)  │
+        ├──────────────────┤ ├──────────────────┤ ├──────────────────┤
+        │ + send_sms()     │ │ + enviar_correo()│ │ + imprimir_voucher()│
+        └──────────────────┘ └──────────────────┘ └──────────────────┘
+
+          ┌──────────────────────────────────────┐
+          │ NotificadorAdapterProducer           │ (Punto de entrada)
+          ├──────────────────────────────────────┤
+          │ + get_adapter(canal: str, usuario)   │
+          │   : Notificador                      │
+          └──────────────────────────────────────┘
+          (Devuelve el Adapter correcto según canal y datos reales del usuario)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           CLASE ORQUESTADORA — Transaccion (integra los 4 patrones)
@@ -385,12 +410,16 @@ El diagrama representa la arquitectura del Sistema Bancario Core implementado en
                │                                         │
                │   Paso 4 ── Abstract Factory ─────────  │
                │            → notificador.notificar()    │
-               └─────────────────────────────────────────┘
-                     │            │            │
-                     ▼            ▼            ▼
-          [Singleton]      [FactoryMethod]  [AbstractFactory]
-          DetectorFraude   OperacionFactory  CanalFactoryProducer
-          Logger           Operacion         AbstractCanalFactory
+               │ Paso 5 ── Adapter ───────────────────── │
+               │ NotificadorAdapterProducer              │
+               │ .get_adapter(canal, usuario)            │
+               │ → notificador.notificar(...)            │ 
+               └─────────────────────────────────────────┘   
+     │                   │                │                     │
+     ▼                   ▼                ▼                     ▼
+ [Singleton]      [FactoryMethod]   [AbstractFactory]        [Adapter]
+ DetectorFraude   OperacionFactory  CanalFactoryProducer     Servicios externos
+ Logger           Operacion         AbstractCanalFactory     (SMS, Email, Voucher)
 ```
 
 ---
@@ -644,6 +673,45 @@ class CuentaBuilder {
   +asociar_sucursal(s: Sucursal) CuentaBuilder
   +build() Cuenta
 }
+%% ═════════════════════════════
+%% PATRÓN 5 — ADAPTER
+%% ═════════════════════════════
+class Notificador {
+  <<abstract>>
+  +notificar(tipo: str, monto: float, cuenta_numero: str)
+}
+class SMSAdapter {
+  +notificar(tipo, monto, cuenta_numero)
+}
+class EmailAdapter {
+  +notificar(tipo, monto, cuenta_numero)
+}
+class VoucherAdapter {
+  +notificar(tipo, monto, cuenta_numero)
+}
+class NotificadorAdapterProducer {
+  +get_adapter(canal: str, usuario) Notificador
+}
+
+class ServicioSMS {
+  +send_sms(destinatario, mensaje)
+}
+class ServicioEmail {
+  +enviar_correo(asunto, cuerpo, destinatario)
+}
+class ServicioVoucherFisico {
+  +imprimir_voucher(datos_voucher)
+}
+Notificador <|-- SMSAdapter
+Notificador <|-- EmailAdapter
+Notificador <|-- VoucherAdapter
+
+SMSAdapter --> ServicioSMS : "adapta"
+EmailAdapter --> ServicioEmail : "adapta"
+VoucherAdapter --> ServicioVoucherFisico : "adapta"
+
+Transaccion --> NotificadorAdapterProducer : "usa"
+NotificadorAdapterProducer ..> Notificador : "retorna"
 
 %% ═════════════════════
 %%  ORQUESTADOR CENTRAL
