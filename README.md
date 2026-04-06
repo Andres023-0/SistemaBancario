@@ -33,37 +33,37 @@ Este proyecto académico simula componentes clave de un entorno bancario moderno
   Se creó una fábrica por canal que produce familias coherentes de `Validador`, `Notificador` y `LimiteCanal`, garantizando reglas y comportamientos consistentes para Web, Móvil y Cajero.
 - **Builder:**  
   Se implementó un Fluent Builder para la creación de cuentas bancarias, desacoplando el proceso de construcción de su representación final. `CuentaBuilder` encadena los pasos de configuración y garantiza en `build()` que todos los datos obligatorios estén presentes.
-- **Adapter:**  
-  Se integraron servicios externos de notificación (SMS, Email, Push y Voucher) con interfaces incompatibles mediante adapters. Esto permite que el sistema use una interfaz unificada (`Notificador`) mientras delega en servicios simulados de terceros (Twilio, SendGrid, Firebase, impresora de cajero), mejorando la extensibilidad y manteniendo el desacoplamiento.
+- **Adapter:**
+  Se integraron servicios externos de notificación (SMS, Email y Voucher físico) cuyas interfaces son incompatibles con el sistema. Mediante el patrón Adapter se creó una interfaz unificada (`Notificador`) que permite al sistema trabajar de forma transparente con servicios simulados de terceros (Twilio, SendGrid, impresora de cajero). La implementación usa datos reales del usuario (`celular` y `correo`) proporcionados por la clase `Usuario`.
 
 ---
 ## Resumen de archivos del proyecto
 
 ```
-    Archivo                  Patrón                  Rol
-─────────────────────────────────────────────────────────────────────────────
-config_banco.py            │ Singleton           │ Configuración global
-logger.py                  │ Singleton           │ Registro de eventos
-detector_fraude.py         │ Singleton           │ Motor antifraude (5 reglas)
-sucursales_manager.py      │ Singleton           │ Gestión de sucursales
-operacion.py               │ Factory Method      │ Producto abstracto/concreto
-operacion_factory.py       │ Factory Method      │ Creador abstracto/concreto
-canal_factory.py           │ Abstract Factory    │ Fábrica + productos por canal
-notificador_adapter.py     │ Adapter             │ Adaptadores de notificación + Adaptees
-cuenta_builder.py          │ Builder             │ Constructor fluent de cuentas
-transaccion.py             │ 5 patrones          │ Orquestador central
-banco.py                   │ Dominio             │ Entidad banco + búsquedas
-cuenta.py                  │ Dominio             │ Entidad cuenta
-usuario.py                 │ Dominio             │ Entidad usuario
-sucursal.py                │ Dominio             │ Entidad sucursal
-main.py                    │ Cliente             │ Interfaz de consola
+| Archivo                   | Patrón              | Rol principal                                      |
+|---------------------------|---------------------|----------------------------------------------------|
+| `config_banco.py`         | Singleton           | Configuración global del sistema                   |
+| `logger.py`               | Singleton           | Registro centralizado de eventos                   |
+| `detector_fraude.py`      | Singleton           | Motor de detección de fraude en tiempo real        |
+| `sucursales_manager.py`   | Singleton           | Gestión de sucursales                              |
+| `operacion.py`            | Factory Method      | Productos de operaciones bancarias                 |
+| `operacion_factory.py`    | Factory Method      | Creadores de operaciones                           |
+| `canal_factory.py`        | Abstract Factory    | Fábricas y productos por canal (Web/Móvil/Cajero)  |
+| `notificador_adapter.py`  | **Adapter**         | Adaptadores + servicios externos de notificación   |
+| `cuenta_builder.py`       | Builder             | Construcción fluida y segura de cuentas            |
+| `transaccion.py`          | **5 patrones**      | Orquestador central de transacciones               |
+| `banco.py`                | Dominio             | Entidad principal del banco                        |
+| `cuenta.py`               | Dominio             | Gestión de saldo y transacciones                   |
+| `usuario.py`              | Dominio             | Entidad usuario + KYC                              |
+| `sucursal.py`             | Dominio             | Asociación de cuentas por sucursal                 |
+| `main.py`                 | Cliente             | Interfaz de usuario en consola                     |
 ```
 
 ---
 
 ## Diagrama UML — Sistema Bancario Core
 
-El diagrama representa la arquitectura del Sistema Bancario Core implementado en Python, mostrando cómo las clases se relacionan entre sí y cómo los cuatro patrones de diseño coexisten dentro del mismo sistema.
+El diagrama representa la arquitectura del Sistema Bancario Core implementado en Python, mostrando cómo las clases se relacionan entre sí y cómo los cinco patrones de diseño coexisten dentro del mismo sistema.
 
 ```
 ╔══════════════════════════════════════════════════════════════════════════════╗
@@ -381,45 +381,29 @@ El diagrama representa la arquitectura del Sistema Bancario Core implementado en
           (Devuelve el Adapter correcto según canal y datos reales del usuario)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          CLASE ORQUESTADORA — Transaccion (integra los 4 patrones)
+          CLASE ORQUESTADORA — Transaccion (integra los 5 patrones)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
                ┌─────────────────────────────────────────┐
-               │               Transaccion               │
+               │ Transaccion                             │
                ├─────────────────────────────────────────┤
-               │ FACTORIES : Dict  [Factory Method]      │
+               │ FACTORIES : Dict [Factory Method]       │
                │ CANALES_VALIDOS : Set                   │
                ├─────────────────────────────────────────┤
-               │ + procesar(cuenta_origen, monto,        │
-               │            canal, cuenta_destino, tipo) │
+               │ + procesar(...)                         │
                │                                         │
-               │   Paso 1 ── Abstract Factory ─────────  │
-               │            CanalFactoryProducer         │
-               │            .get_factory(canal)          │
-               │            → validador.validar()        │
-               │                                         │
-               │   Paso 2 ── Singleton ─────────────────  │
-               │            DetectorFraude               │
-               │            .get_instancia()             │
-               │            → detector.evaluar()         │
-               │                                         │
-               │   Paso 3 ── Factory Method ────────────  │
-               │            FACTORIES[tipo]              │
-               │            .crear_operacion()           │
-               │            → operacion.ejecutar()       │
-               │                                         │
-               │   Paso 4 ── Abstract Factory ─────────  │
-               │            → notificador.notificar()    │
-               │ Paso 5 ── Adapter ───────────────────── │
-               │ NotificadorAdapterProducer              │
-               │ .get_adapter(canal, usuario)            │
-               │ → notificador.notificar(...)            │ 
-               └─────────────────────────────────────────┘   
-     │                   │                │                     │
-     ▼                   ▼                ▼                     ▼
- [Singleton]      [FactoryMethod]   [AbstractFactory]        [Adapter]
- DetectorFraude   OperacionFactory  CanalFactoryProducer     Servicios externos
- Logger           Operacion         AbstractCanalFactory     (SMS, Email, Voucher)
+               │ Paso 1 ── Abstract Factory              │ → Validación y límites del canal
+               │ Paso 2 ── Singleton                     │ → Detector de fraude
+               │ Paso 3 ── Factory Method                │ → Ejecuta la operación
+               │ Paso 4 ── Abstract Factory              │ → Obtiene Notificador
+               │ Paso 5 ── Adapter                       │ → Notificación externa
+               │   NotificadorAdapterProducer.get_adapter(canal, usuario)
+               │   → notificador.notificar(...)          │
+               └─────────────────────────────────────────┘
+                     │
+                     ▼
+          [Singleton]     [FactoryMethod]  [AbstractFactory] [Adapter]
+          DetectorFraude  Operacion        CanalFactory      Servicios externos
+                          Factory          Producer          (SMS, Email, Voucher)
 ```
 
 ---
