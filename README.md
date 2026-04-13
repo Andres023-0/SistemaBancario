@@ -1,68 +1,84 @@
 # Patrones - Sistema Bancario Core
-**CREADO POR:**  
-BRAYAN ANDRES CAÑAS LEON / JUAN SEBASTIAN NIÑO FORERO
+
+**Desarrollado por:**  
+
+- Brayan Andrés Cañas León
+
+- Juan Sebastián Niño Forero
+
+Docente: Eliecer Montero Ojeda
+
+Institución:
+
+- Unidades Tecnológicas de Santander (UTS)
 
 ---
+
 ## Simulación de un Sistema Bancario
-### Objetivo principal
-Este proyecto académico simula componentes clave de un entorno bancario moderno, con enfoque especial en procesos de **cumplimiento regulatorio** (KYC y AML) en tiempo real, demostrando la aplicación práctica de **principios SOLID** y **cinco patrones de diseño** (Singleton, Factory Method, Abstract Factory, Builder y Adapter) para construir software de calidad en un contexto financiero regulado, eliminando code smells comunes y logrando un diseño modular, mantenible y extensible.
+
+Este proyecto académico, denominado "Sistema Bancario Core", es una simulación avanzada de los componentes fundamentales de un entorno bancario moderno. Su propósito principal es ilustrar la aplicación práctica de principios de diseño de software y patrones arquitectónicos en un contexto financiero regulado, abordando desafíos como el cumplimiento normativo (KYC y AML) y la gestión de transacciones en tiempo real.
+
+El objetivo central es demostrar cómo la implementación estratégica de ocho patrones de diseño (Singleton, Factory Method, Abstract Factory, Builder, Prototype, Adapter, Bridge y Decorator) contribuye a la construcción de un software de alta calidad: modular, mantenible, extensible y robusto, eliminando code smells y promoviendo una arquitectura limpia.
 
 ---
-### Módulos representativos del sector financiero
-- **Gestión de cuentas múltiples**  
-  Cuentas corriente y ahorros asociadas a usuarios verificados, con historial de transacciones y saldo en `Decimal` para precisión financiera.
-- **Transacciones por múltiples canales**  
-  Web, móvil y cajero procesan operaciones con reglas propias de límites, notificaciones y restricciones por canal mediante Abstract Factory.
-- **Detección de fraude en tiempo real**  
-  `DetectorFraude` evalúa 5 reglas antes de aprobar cada transacción: límite AML, alta frecuencia, saldo crítico, canal inusual y cuenta sin historial.
-- **KYC**  
-  `Usuario` requiere `verificado_kyc = True` antes de abrir cualquier cuenta, bloqueando el onboarding de clientes no validados.
-- **AML**  
-  `ConfigBanco` centraliza los umbrales: $10.000 por transacción, máximo 5 operaciones en 5 minutos y saldo mínimo de $1.000.
-- **Construcción de cuentas con Builder**  
-  `CuentaBuilder` garantiza que cada cuenta se construya con todos sus datos válidos (número, tipo, saldo, usuario con KYC verificado y sucursal) antes de persistir, mediante una API fluida encadenada.
+
+## Módulos Clave y Funcionalidades Financieras
+
+El sistema bancario simulado integra funcionalidades esenciales que reflejan operaciones del sector financiero, destacando por su enfoque en la precisión y la seguridad:
+
+• Gestión Integral de Cuentas: Soporte para cuentas corrientes y de ahorros, asociadas a usuarios previamente verificados. Cada cuenta mantiene un historial detallado de transacciones y gestiona su saldo utilizando el tipo de dato Decimal para garantizar la precisión financiera y evitar errores de redondeo críticos.
+
+• Procesamiento Multicanal de Transacciones: Las operaciones bancarias (depósitos, retiros, transferencias) pueden ser iniciadas a través de diversos canales (Web, Móvil, Cajero). Cada canal implementa sus propias reglas de negocio, incluyendo límites transaccionales, restricciones específicas y mecanismos de notificación diferenciados.
+
+• Detección de Fraude en Tiempo Real: Un módulo especializado (DetectorFraude) evalúa cada transacción frente a un conjunto de cinco reglas críticas antes de su aprobación. Estas reglas incluyen la verificación de límites AML, la detección de alta frecuencia transaccional, el monitoreo de saldos críticos, la identificación de canales inusuales y la validación de transferencias a cuentas sin historial previo.
+
+• Verificación KYC (Know Your Customer): Se exige que cada Usuario complete un proceso de verificación KYC (verificado_kyc = True) como requisito indispensable antes de poder abrir cualquier tipo de cuenta bancaria, asegurando el cumplimiento normativo.
+
+• Cumplimiento AML (Anti Money Laundering): La configuración global del sistema (ConfigBanco) centraliza los umbrales y políticas para la prevención del lavado de dinero. Esto incluye un límite de $10.000 por transacción, un máximo de 5 operaciones en un período de 5 minutos y un saldo mínimo de $1.000 para ciertas operaciones.
+
+• Construcción Segura y Consistente de Cuentas: El CuentaBuilder facilita la creación de nuevas cuentas bancarias mediante una API fluida y encadenable. Este patrón garantiza que cada cuenta se construya con todos sus atributos válidos y que las validaciones necesarias se realicen de manera centralizada y atómica.
 
 ---
-## Enfoque de Calidad de Software con implementación de principios SOLID
-### Patrones de diseño implementados
-- **Singleton:**  
-  Se centralizó la configuración, logs, detección de fraude y sucursales en instancias únicas thread-safe usando Double-Checked Locking, garantizando consistencia global sin duplicar valores en el sistema.
-- **Factory Method:**  
-  Se delegó la creación de operaciones bancarias a fábricas concretas por tipo, eliminando condicionales en `Transaccion.procesar()` y permitiendo agregar nuevas operaciones sin modificar código existente.
-- **Abstract Factory:**  
-  Se creó una fábrica por canal que produce familias coherentes de `Validador`, `Notificador` y `LimiteCanal`, garantizando reglas y comportamientos consistentes para Web, Móvil y Cajero.
-- **Builder:**  
-  Se implementó un Fluent Builder para la creación de cuentas bancarias, desacoplando el proceso de construcción de su representación final. `CuentaBuilder` encadena los pasos de configuración y garantiza en `build()` que todos los datos obligatorios estén presentes.
-- **Prototype:**
-  El patrón Prototype crea nuevos objetos clonando una instancia existente. En el sistema bancario es ideal para crear nuevas cuentas a partir de plantillas preconfiguradas (PlantillaCuentaAhorro, PlantillaCuentaCorriente, PlantillaCuentaEmpresarial). Evita reconstruir toda la configuración desde cero y permite personalizar solo los campos que difieren (titular, número de cuenta).
-- **Adapter:**
-  Se integraron servicios externos de notificación (SMS, Email y Voucher físico) cuyas interfaces son incompatibles con el sistema. Mediante el patrón Adapter se creó una interfaz unificada (`Notificador`) que permite al sistema trabajar de forma transparente con servicios simulados de terceros (Twilio, SendGrid, impresora de cajero). La implementación usa datos reales del usuario (`celular` y `correo`) proporcionados por la clase `Usuario`.
-- **Bridge:** 
-  Se implemento en la abstracción sería OperacionBancaria (con variantes como OperacionSimple u OperacionProgramada) y la implementación sería el canal de procesamiento (ProcesadorWeb, ProcesadorMovil, ProcesadorCajero). Así puedes cambiar cómo se procesa una transferencia sin tocar la lógica de negocio de la transferencia en sí.
-- **Decorator:**
-  Se implemento al momento de agregar comportamiento a objetos en tiempo de ejecución, envolviéndolos en capas. En lugar de crear subclases para cada combinación posible, se "decoran" las transacciones con características adicionales: TransaccionConLog, TransaccionConAuditoria, TransaccionConSeguro. Se pueden apilar libremente: una transferencia puede tener log + auditoría + seguro, sin modificar la clase base.
----
-## Resumen de archivos del proyecto
 
-```
-| Archivo                   | Patrón              | Rol principal                                      |
-|---------------------------|---------------------|----------------------------------------------------|
-| `config_banco.py`         | Singleton           | Configuración global del sistema                   |
-| `logger.py`               | Singleton           | Registro centralizado de eventos                   |
-| `detector_fraude.py`      | Singleton           | Motor de detección de fraude en tiempo real        |
-| `sucursales_manager.py`   | Singleton           | Gestión de sucursales                              |
-| `operacion.py`            | Factory Method      | Productos de operaciones bancarias                 |
-| `operacion_factory.py`    | Factory Method      | Creadores de operaciones                           |
-| `canal_factory.py`        | Abstract Factory    | Fábricas y productos por canal (Web/Móvil/Cajero)  |
-| `notificador_adapter.py`  | Adapter             | Adaptadores + servicios externos de notificación   |
-| `cuenta_builder.py`       | Builder             | Construcción fluida y segura de cuentas            |
-| `transaccion.py`          | 5 patrones          | Orquestador central de transacciones               |
-| `banco.py`                | Dominio             | Entidad principal del banco                        |
-| `cuenta.py`               | Dominio             | Gestión de saldo y transacciones                   |
-| `usuario.py`              | Dominio             | Entidad usuario + KYC                              |
-| `sucursal.py`             | Dominio             | Asociación de cuentas por sucursal                 |
-| `main.py`                 | Cliente             | Interfaz de usuario en consola                     |
-```
+## Patrones de Diseño Implementados
+
+El proyecto banco_coreDeco es una demostración práctica de cómo los patrones de diseño pueden estructurar una aplicación compleja, promoviendo la modularidad y la extensibilidad. A continuación, se detallan los ocho patrones implementados:
+
+| Patrón de Diseño | Descripción y Aplicación en el Proyecto |
+| :--- | :--- |
+| **Singleton** | Asegura una única instancia global para componentes críticos como la configuración (`ConfigBanco`), el sistema de registro (`Logger`), el detector de fraude (`DetectorFraude`) y el gestor de sucursales (`SucursalesManager`). Implementado con *Double-Checked Locking* para garantizar la seguridad en entornos multihilo. |
+| **Factory Method** | Desacopla la creación de objetos de su uso. Permite que la clase `Transaccion` solicite la creación de operaciones bancarias (`Deposito`, `Retiro`, `Transferencia`) a fábricas especializadas, facilitando la adición de nuevos tipos de operaciones sin modificar el código existente de `Transaccion`. |
+| **Abstract Factory** | Proporciona una interfaz para crear familias de objetos relacionados o dependientes sin especificar sus clases concretas. En este proyecto, se utiliza para generar conjuntos coherentes de `Validador`, `Notificador` y `LimiteCanal` específicos para cada canal (Web, Móvil, Cajero), encapsulando las reglas de negocio por canal. |
+| **Builder (Fluent Builder)** | Separa la construcción de un objeto complejo de su representación, permitiendo que el mismo proceso de construcción cree diferentes representaciones. El `CuentaBuilder` ofrece una API fluida para construir objetos `Cuenta` de manera segura y legible, centralizando las validaciones y asegurando la integridad del objeto final. |
+| **Prototype** | Permite crear nuevos objetos clonando instancias existentes, evitando la necesidad de recrear objetos complejos desde cero. El `CuentaPrototypeRegistry` y el método `clone()` en `Cuenta` facilitan la creación de cuentas plantilla y su posterior clonación, ideal para escenarios donde se necesitan múltiples cuentas con configuraciones similares. |
+| **Adapter** | Permite que interfaces incompatibles trabajen juntas. Se utiliza para integrar servicios externos de notificación (SMS, Email, Voucher) con la lógica interna del sistema. Los adaptadores (`NotificadorAdapterProducer`) permiten que el sistema envíe mensajes a los usuarios a través de diferentes medios sin que la lógica de `Transaccion` necesite conocer los detalles de cada proveedor. |
+| **Bridge** | Desacopla una abstracción de su implementación, permitiendo que ambas evolucionen de forma independiente. Es el patrón central que une las operaciones bancarias (`OperacionBancaria`) con los canales de atención (`CanalBancario`), permitiendo añadir nuevas operaciones o nuevos canales sin afectar la otra jerarquía. |
+| **Decorator** | Permite añadir nuevas funcionalidades a un objeto dinámicamente sin alterar su estructura. El `OperacionDecoratorProducer` envuelve las operaciones bancarias con comportamientos transversales como el registro de tiempo (`LogTiempoDecorator`), la auditoría (`AuditoriaDecorator`) o la gestión de reintentos (`ReintentoDecorator`), sin modificar las clases de operación originales. |
+
+---
+
+## Resumen de Archivos del Proyecto
+
+La siguiente tabla proporciona una visión general de los archivos clave del proyecto, su rol principal y los patrones de diseño asociados:
+
+| Archivo(s) | Patrón(es) Asociado(s) | Rol Principal en el Sistema |
+| :--- | :--- | :--- |
+| `config_banco.py` | Singleton | Centraliza la configuración global del sistema y umbrales AML. |
+| `logger.py` | Singleton | Proporciona un sistema de registro centralizado para eventos del sistema. |
+| `detector_fraude.py` | Singleton | Implementa la lógica para la detección de fraude en transacciones. |
+| `sucursales_manager.py` | Singleton | Gestiona las sucursales bancarias disponibles en el sistema. |
+| `operacion.py`, `operacion_factory.py` | Factory Method | Define la interfaz para operaciones bancarias y sus fábricas de creación. |
+| `canal_factory.py` | Abstract Factory | Crea familias de validadores, notificadores y límites específicos por canal. |
+| `canal_bridge.py`, `operacion_bridge.py` | Bridge | Desacopla las operaciones bancarias de sus implementaciones por canal. |
+| `cuenta_builder.py` | Builder | Facilita la construcción segura y fluida de objetos `Cuenta`. |
+| `cuenta.py`, `cuenta_prototype.py` | Prototype | Permite la clonación de cuentas plantilla y la gestión de saldos con precisión `Decimal`. |
+| `notificador_adapter.py` | Adapter | Adapta servicios de notificación externos (SMS, Email, Voucher) al sistema. |
+| `operacion_decorator.py` | Decorator | Añade dinámicamente comportamientos transversales a las operaciones. |
+| `transaccion.py` | Bridge, Decorator | Orquesta el procesamiento de transacciones, delegando al Bridge y aplicando Decorators. |
+| `banco.py` | Dominio | Actúa como el orquestador principal, gestionando usuarios y cuentas. |
+| `usuario.py` | Dominio | Representa a los clientes del banco y gestiona su estado KYC. |
+| `sucursal.py` | Dominio | Define la entidad sucursal y su asociación con cuentas. |
+| `main.py` | Cliente | Punto de entrada del sistema, interactúa con el usuario a través de la consola. |
 
 ---
 
@@ -70,730 +86,138 @@ Este proyecto académico simula componentes clave de un entorno bancario moderno
 
 El diagrama representa la arquitectura del Sistema Bancario Core implementado en Python, mostrando cómo las clases se relacionan entre sí y cómo los cinco patrones de diseño coexisten dentro del mismo sistema.
 
-```
-╔══════════════════════════════════════════════════════════════════════════════╗
-║                 DIAGRAMA DE CLASES — SISTEMA BANCARIO CORE                  ║
-╚══════════════════════════════════════════════════════════════════════════════╝
+    classDiagram
+    %% CAPA DE CONFIGURACIÓN Y SERVICIOS (SINGLETON)
+    class ConfigBanco {
+        <<Singleton>>
+        - _instancia: ConfigBanco
+        + get_instancia() ConfigBanco
+        + get_limite_aml() Decimal
+    }
 
+    class DetectorFraude {
+        <<Singleton>>
+        + evaluar(cuenta, monto, canal, tipo) bool
+    }
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                    CAPA DE DOMINIO — Modelo de negocio
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    class Logger {
+        <<Singleton>>
+        + log(mensaje, nivel)
+    }
 
- ┌───────────────────────────┐                    ┌───────────────────────────┐
- │           Banco           │  1           0..*  │          Sucursal         │
- ├───────────────────────────┤ ─────────────────▶ ├───────────────────────────┤
- │ - usuarios : List         │                    │ - _nombre : String        │
- │ - sucursales : List       │                    │ - _cuentas : List         │
- ├───────────────────────────┤                    ├───────────────────────────┤
- │ + agregar_usuario()       │                    │ + agregar_cuenta()        │
- │ + buscar_usuario_         │                    │ + nombre (property)       │
- │     por_documento()       │                    │ + cuentas (property)      │
- │ + buscar_cuenta_          │                    └───────────────────────────┘
- │     por_numero()          │                                 ▲
- └───────────────────────────┘                                │ asociada a
-               │                                              │
-               │ 1                                            │
-               │ registra                                     │
-               │ 0..*                                         │
-               ▼                                              │
- ┌───────────────────────────┐                                │
- │          Usuario          │                                │
- ├───────────────────────────┤                                │
- │ + nombre : String         │                                │
- │ + documento : String      │                                │
- │ + verificado_kyc : Boolean│                                │
- │ + cuentas : List          │                                │
- ├───────────────────────────┤                                │
- │ + verificar_kyc()         │                                │
- │ + agregar_cuenta()        │                                │
- └───────────────────────────┘                                │
-               │                                              │
-               │ 1                                            │
-               │ posee                                        │
-               │ 0..*                                         │
-               ▼                                              │
- ┌───────────────────────────┐                                │
- │          Cuenta           │ ───────────────────────────────┘
- ├───────────────────────────┤
- │ + numero : String         │
- │ - _tipo : String          │
- │ - _saldo : Decimal        │
- │ + transacciones : List    │
- ├───────────────────────────┤
- │ + depositar()             │
- │ + retirar()               │
- │ + transferir()            │
- │ + saldo (property)        │
- │ + tipo (property)         │
- │ - _registrar()            │
- └───────────────────────────┘
+    class SucursalesManager {
+        <<Singleton>>
+        + sucursales: List
+    }
 
+    %% CAPA DE CREACIÓN (BUILDER + PROTOTYPE)
+    class CuentaBuilder {
+        - _numero: str
+        - _tipo: str
+        - _usuario: Usuario
+        + tipo(str) self
+        + saldo_inicial(Decimal) self
+        + build() Cuenta
+        + clone_desde(Cuenta) Cuenta
+    }
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- PATRÓN SINGLETON  ◄─────────────────────────────── [patron_1_singleton]
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    class CuentaPrototypeRegistry {
+        - _plantillas: dict
+        + registrar_plantilla(nombre, cuenta)
+        + obtener_plantilla(nombre) Cuenta
+    }
 
- ┌──────────────────────────┐        ┌──────────────────────────┐
- │      <<Singleton>>       │  lee   │      <<Singleton>>       │
- │        ConfigBanco       │───────▶│      DetectorFraude      │
- ├──────────────────────────┤        ├──────────────────────────┤
- │ - _instancia             │        │ - _instancia             │
- │ - _lock : Lock           │        │ - _lock : Lock           │
- │ - _limite_aml : float    │        │ - _limite_aml : float    │
- │ - _max_transacciones:int │        │ - _max_transacciones:int │
- │ - _ventana_minutos : int │        │ - _ventana_minutos : int │
- │ - _saldo_critico : float │        │ - _saldo_critico : float │
- │ - _sucursales_predet:List│        ├──────────────────────────┤
- ├──────────────────────────┤        │ + get_instancia()        │
- │ + get_instancia()        │        │ + evaluar()              │
- │ + get_limite_aml()       │        └──────────────────────────┘
- │ + get_max_transacc()     │
- │ + get_ventana_tiemp()    │
- │ + get_saldo_critico()    │
- │ + get_sucursales()       │
- └──────────────────────────┘
+    class Cuenta {
+        + numero: str
+        - _saldo: Decimal
+        + clone() Cuenta
+        + depositar(monto)
+    }
 
- ┌──────────────────────────┐        ┌──────────────────────────┐
- │      <<Singleton>>       │        │      <<Singleton>>       │
- │         Logger           │        │    SucursalesManager     │
- ├──────────────────────────┤        ├──────────────────────────┤
- │ - _instancia             │        │ - _instancia             │
- │ - _lock : Lock           │        │ - _lock : Lock           │
- │ - _logs : List           │        │ - _sucursales : List     │
- ├──────────────────────────┤        ├──────────────────────────┤
- │ + get_instancia()        │        │ + get_instancia()        │
- │ + log()                  │        │ + agregar_sucursal()     │
- │ + get_logs()             │        │ + sucursales (property)  │
- └──────────────────────────┘        └──────────────────────────┘
+    CuentaBuilder ..> Cuenta : "Construye"
+    CuentaBuilder ..> CuentaPrototypeRegistry : "Usa para clone_desde"
+    Cuenta ..> Cuenta : "Prototype (clone)"
 
+    %% CAPA DE EJECUCIÓN (BRIDGE)
+    class OperacionBancaria {
+        <<Abstract>>
+        - _canal: CanalBancario
+        + ejecutar() bool
+        # _operar()*
+    }
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- PATRÓN FACTORY METHOD  ◄───────────────────── [patron_2_factory_method]
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    class CanalBancario {
+        <<Interface>>
+        + validar(monto, tipo) bool
+        + notificar(tipo, monto)
+    }
 
-                    ┌──────────────────────────┐
-                    │       <<abstract>>       │   archivo: operacion.py
-                    │         Operacion        │   (Producto abstracto)
-                    ├──────────────────────────┤
-                    │ + ejecutar(cuenta_origen,│
-                    │   monto, canal,          │
-                    │   cuenta_destino)        │
-                    └──────────────────────────┘
-                                 △
-                                 │  hereda
-           ┌─────────────────────┼─────────────────────┐
-           │                     │                     │
- ┌──────────────────┐  ┌──────────────────┐  ┌────────────────────────┐
- │OperacionDeposito │  │ OperacionRetiro  │  │OperacionTransferencia  │
- ├──────────────────┤  ├──────────────────┤  ├────────────────────────┤
- │ + ejecutar()     │  │ + ejecutar()     │  │ + ejecutar()           │
- │ cuenta.depositar │  │ cuenta.retirar() │  │ cuenta.transferir()    │
- └──────────────────┘  └──────────────────┘  └────────────────────────┘
+    OperacionBancaria o-- CanalBancario : "Bridge (Puente)"
+    
+    class Deposito { + _operar() }
+    class Retiro { + _operar() }
+    class Transferencia { + _operar() }
+    OperacionBancaria <|-- Deposito
+    OperacionBancaria <|-- Retiro
+    OperacionBancaria <|-- Transferencia
 
-                    ┌──────────────────────────┐
-                    │       <<abstract>>       │   archivo: operacion_factory.py
-                    │      OperacionFactory    │   (Creador abstracto)
-                    ├──────────────────────────┤
-                    │ + crear_operacion()      │
-                    │     : Operacion          │
-                    └──────────────────────────┘
-                                 △
-                                 │  hereda
-           ┌─────────────────────┼─────────────────────┐
-           │                     │                     │
- ┌──────────────────┐  ┌──────────────────┐  ┌────────────────────────┐
- │  DepositoFactory │  │  RetiroFactory   │  │  TransferenciaFactory  │
- ├──────────────────┤  ├──────────────────┤  ├────────────────────────┤
- │+crear_operacion()│  │+crear_operacion()│  │ + crear_operacion()    │
- │ : Operacion-     │  │ : Operacion-     │  │   : Operacion-         │
- │   Deposito       │  │   Retiro         │  │     Transferencia      │
- └──────────────────┘  └──────────────────┘  └────────────────────────┘
-           │                     │                     │
-           └─────────────────────┼─────────────────────┘
-                                 │ instanciadas por
-                                 ▼
-                    ┌──────────────────────────┐
-                    │       Transaccion        │
-                    ├──────────────────────────┤
-                    │ FACTORIES = {            │
-                    │  "deposito":             │
-                    │     DepositoFactory()    │
-                    │  "retiro":               │
-                    │     RetiroFactory()      │
-                    │  "transferencia":        │
-                    │     TransfFactory()      │
-                    │ }                        │
-                    │ CANALES_VALIDOS : Set    │
-                    ├──────────────────────────┤
-                    │ + procesar()             │
-                    └──────────────────────────┘
+    class CanalWeb { + validar() }
+    class CanalMovil { + validar() }
+    class CanalCajero { + validar() }
+    CanalBancario <|-- CanalWeb
+    CanalBancario <|-- CanalMovil
+    CanalBancario <|-- CanalCajero
 
+    %% CAPA DE EXTENSIBILIDAD (DECORATOR + ADAPTER + ABSTRACT FACTORY)
+    class OperacionDecorator {
+        <<Abstract>>
+        - _operacion: Operacion
+        + ejecutar()
+    }
+    
+    class AuditoriaDecorator { + ejecutar() }
+    class LogTiempoDecorator { + ejecutar() }
+    class ReintentoDecorator { + ejecutar() }
+    OperacionDecorator <|-- AuditoriaDecorator
+    OperacionDecorator <|-- LogTiempoDecorator
+    OperacionDecorator <|-- ReintentoDecorator
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- PATRÓN ABSTRACT FACTORY  ◄────────────────── [patron_3_abstract_factory]
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    class AbstractCanalFactory {
+        <<Interface>>
+        + crear_validador()
+        + crear_notificador()
+    }
+    CanalBancario ..> AbstractCanalFactory : "Usa para componentes"
 
-               ┌────────────────────────────┐
-               │         <<abstract>>       │   archivo: canal_factory.py
-               │     AbstractCanalFactory   │   (Fábrica abstracta)
-               ├────────────────────────────┤
-               │ + crear_validador()        │
-               │     : Validador            │
-               │ + crear_notificador()      │
-               │     : Notificador          │
-               │ + crear_limite()           │
-               │     : LimiteCanal          │
-               └────────────────────────────┘
-                             △
-                             │  hereda
-        ┌────────────────────┼────────────────────┐
-        │                    │                    │
-┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐
-│    WebFactory    │ │   MovilFactory   │ │  CajeroFactory   │
-├──────────────────┤ ├──────────────────┤ ├──────────────────┤
-│+crear_validador()│ │+crear_validador()│ │+crear_validador()│
-│+crear_notific.() │ │+crear_notific.() │ │+crear_notific.() │
-│+crear_limite()   │ │+crear_limite()   │ │+crear_limite()   │
-└──────────────────┘ └──────────────────┘ └──────────────────┘
-       │ crea               │ crea               │ crea
-       ▼                    ▼                    ▼
-┌────────────┐       ┌────────────┐       ┌────────────┐
-│ValidadorWeb│       │ValidadorMov│       │ValidadorCaj│
-├────────────┤       ├────────────┤       ├────────────┤  Producto A
-│+validar()  │       │+validar()  │       │+validar()  │  (hereda Validador)
-│ máx: $50M  │       │ máx:  $5M  │       │ máx:  $2M  │
-│            │       │            │       │ NO transf. │
-└────────────┘       └────────────┘       └────────────┘
+    class NotificadorAdapter {
+        <<Interface>>
+        + enviar(mensaje)
+    }
+    
+    class SMSAdapter { - _servicioSMS: ServicioSMS }
+    class EmailAdapter { - _servicioEmail: ServicioEmail }
+    NotificadorAdapter <|-- SMSAdapter
+    NotificadorAdapter <|-- EmailAdapter
+    CanalBancario ..> NotificadorAdapter : "Usa para notificar"
 
-┌────────────┐       ┌────────────┐       ┌────────────┐
-│Notificador │       │Notificador │       │Notificador │
-│    Web     │       │   Movil    │       │  Cajero    │  Producto B
-├────────────┤       ├────────────┤       ├────────────┤  (hereda Notificador)
-│+notificar()│       │+notificar()│       │+notificar()│
-│  (email)   │       │(push + SMS)│       │ (voucher)  │
-└────────────┘       └────────────┘       └────────────┘
+    %% RELACIONES DE DOMINIO
+    class Usuario {
+        + nombre: str
+        + verificado_kyc: bool
+    }
+    
+    class Sucursal {
+        + nombre: str
+        + cuentas: List
+    }
 
-┌────────────┐       ┌────────────┐       ┌────────────┐
-│LimiteCanal │       │LimiteCanal │       │LimiteCanal │
-│    Web     │       │   Movil    │       │  Cajero    │  Producto C
-├────────────┤       ├────────────┤       ├────────────┤  (hereda LimiteCanal)
-│+get_max()  │       │+get_max()  │       │+get_max()  │
-│+get_min()  │       │+get_min()  │       │+get_min()  │
-│+get_nombre │       │+get_nombre │       │+get_nombre │
-└────────────┘       └────────────┘       └────────────┘
-
-          ┌──────────────────────────────┐
-          │      CanalFactoryProducer    │   (Punto de entrada)
-          ├──────────────────────────────┤
-          │ _fabricas = {               │
-          │   "web"   : WebFactory()    │
-          │   "movil" : MovilFactory()  │
-          │   "cajero": CajeroFactory() │
-          │ }                           │
-          ├──────────────────────────────┤
-          │ + get_factory(canal: str)   │
-          │     : AbstractCanalFactory  │
-          └──────────────────────────────┘
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- PATRÓN BUILDER  ◄──────────────────────────────── [patron_4_builder]
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-        ┌──────────────────────────────┐
-        │         CuentaBuilder        │   archivo: cuenta_builder.py
-        ├──────────────────────────────┤
-        │ - _numero        : String    │
-        │ - _tipo          : String    │
-        │ - _saldo_inicial : float     │
-        │ - _usuario       : Usuario   │
-        │ - _sucursal      : Sucursal  │
-        ├──────────────────────────────┤
-        │ + numero(n: str)             │──┐
-        │ + tipo(t: str)               │  │ retornan self
-        │ + saldo_inicial(m: float)    │  │ (Fluent API)
-        │ + asociar_usuario(u: Usuario)│──┘
-        │ + asociar_sucursal(s: Sucurs)│
-        │ + build() : Cuenta           │──► crea y asocia Cuenta
-        └──────────────────────────────┘
-                      │
-                      │ crea
-                      ▼
-             ┌────────────────┐
-             │     Cuenta     │
-             └────────────────┘
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-                  PRODUCTOS ABSTRACTOS — Abstract Factory
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-┌──────────────────────┐  ┌──────────────────────┐  ┌──────────────────────┐
-│     <<abstract>>     │  │     <<abstract>>     │  │     <<abstract>>     │
-│       Validador      │  │     Notificador      │  │     LimiteCanal      │
-├──────────────────────┤  ├──────────────────────┤  ├──────────────────────┤
-│ + validar(monto,tipo)│  │ + notificar(tipo,    │  │ + get_limite_max()   │
-│   : (bool, str)      │  │   monto, cuenta_num) │  │ + get_limite_min()   │
-└──────────────────────┘  └──────────────────────┘  │ + get_nombre_canal() │
-         △                         △                └──────────────────────┘
-         │                         │                         △
-  ┌──────┴──────┐           ┌──────┴──────┐          ┌──────┴──────┐
-  │ValidadorWeb │           │NotifWeb     │          │LimiteWeb    │
-  │ValidadorMov │           │NotifMovil   │          │LimiteMovil  │
-  │ValidadorCaj │           │NotifCajero  │          │LimiteCajero │
-  └─────────────┘           └─────────────┘          └─────────────┘
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- PATRÓN ADAPTER ◄────────────────────────────── [patron_5_adapter]
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-               ┌────────────────────────────┐
-               │ <<interface>>              │ archivo: notificador_adapter.py
-               │ Notificador (Target)       │
-               ├────────────────────────────┤
-               │ + notificar(tipo, monto,   │
-               │   cuenta_numero)           │
-               └────────────────────────────┘
-                             ▲
-                             │ implementa
-        ┌────────────────────┼────────────────────┐
-        │                    │                    │
-┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐
-│ SMSAdapter       │ │ EmailAdapter     │ │ VoucherAdapter   │
-├──────────────────┤ ├──────────────────┤ ├──────────────────┤
-│ - _servicio      │ │ - _servicio      │ │ - _servicio      │
-│ - _numero_celular│ │ - _correo_destino│ │                  │
-├──────────────────┤ ├──────────────────┤ ├──────────────────┤
-│ + notificar()    │ │ + notificar()    │ │ + notificar()    │
-│   → send_sms()   │ │   → enviar_correo│ │   → imprimir_    │
-└──────────────────┘ └──────────────────┘ │   voucher()      │
-                                          └──────────────────┘
-
-               Adaptees (interfaces incompatibles)
-        ┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐
-        │ ServicioSMS      │ │ ServicioEmail    │ │ ServicioVoucher  │
-        │ (Twilio simulado)│ │ (SendGrid sim.)  │ │ Físico (Cajero)  │
-        ├──────────────────┤ ├──────────────────┤ ├──────────────────┤
-        │ + send_sms()     │ │ + enviar_correo()│ │ + imprimir_voucher()│
-        └──────────────────┘ └──────────────────┘ └──────────────────┘
-
-          ┌──────────────────────────────────────┐
-          │ NotificadorAdapterProducer           │ (Punto de entrada)
-          ├──────────────────────────────────────┤
-          │ + get_adapter(canal: str, usuario)   │
-          │   : Notificador                      │
-          └──────────────────────────────────────┘
-          (Devuelve el Adapter correcto según canal y datos reales del usuario)
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          CLASE ORQUESTADORA — Transaccion (integra los 5 patrones)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-               ┌─────────────────────────────────────────────┐
-               │ Transaccion                                 │
-               ├─────────────────────────────────────────────┤
-               │ FACTORIES : Dict          [Factory Method]  │
-               │ CANALES_VALIDOS : Set                       │
-               ├─────────────────────────────────────────────┤
-               │ + procesar(cuenta_origen, monto, canal, ...)│
-               │                                             │
-               │ Paso 1 ── Abstract Factory                  │ → Validación y límitesdelcanal
-               │ Paso 2 ── Singleton                         │ → Detector de fraude
-               │ Paso 3 ── Factory Method                    │ → Ejecuta la operación
-               │ Paso 4 ── Abstract Factory                  │ → Obtiene el Notificador
-               │ Paso 5 ── Adapter                           │ → Notificación externa
-               │  NotificadorAdapterProducer.get_adapter(...)│
-               │   → notificador.notificar(...)              │
-               └─────────────────────────────────────────────┘
-                     │
-                     ▼
-          [Singleton] [Factory Method] [Abstract Factory] [Adapter]
-          DetectorFraude   OperacionFactory   CanalFactoryProducer   Servicios externos
-                                                              (SMS, Email, Voucher)
-```
+    Usuario "1" *-- "0..*" Cuenta : "Posee"
+    Sucursal "1" *-- "0..*" Cuenta : "Contiene"
+    CuentaBuilder --> Usuario : "Asocia"
+    CuentaBuilder --> Sucursal : "Asocia"
+<img width="8191" height="2312" alt="Diagrama" src="https://github.com/user-attachments/assets/d19bad59-4b9a-46a9-9f12-2c18cec0eba4" />
 
 ---
-
-## classDiagram (Mermaid)
-
-```
-classDiagram
-direction TB
-
-%% ═══════════════════════════════════════════════════
-%%  MÓDULO DOMINIO — Banco, Sucursal, Usuario, Cuenta
-%% ═══════════════════════════════════════════════════
-
-class Banco {
-  -usuarios : List
-  -sucursales : List
-  +agregar_usuario(usuario : Usuario)
-  +buscar_usuario_por_documento(documento) Usuario
-  +buscar_cuenta_por_numero(numero) Cuenta
-}
-
-class Sucursal {
-  -_nombre : String
-  -_cuentas : List
-  +agregar_cuenta(cuenta : Cuenta)
-  +nombre() String
-  +cuentas() List
-}
-
-class Usuario {
-  +nombre : String
-  +documento : String
-  +verificado_kyc : Boolean
-  +cuentas : List
-  +verificar_kyc()
-  +agregar_cuenta(cuenta : Cuenta)
-}
-
-class Cuenta {
-  +numero : String
-  -_tipo : String
-  -_saldo : Decimal
-  +transacciones : List
-  +depositar(monto, canal)
-  +retirar(monto, canal)
-  +transferir(cuenta_destino, monto, canal)
-  +saldo() float
-  +tipo() String
-  -_registrar(tipo, monto, canal)
-}
-
-%% ══════════════════════
-%%  PATRÓN 1 — SINGLETON
-%% ══════════════════════
-
-class ConfigBanco {
-  <<Singleton>>
-  -_instancia
-  -_lock : Lock
-  -_limite_aml : float
-  -_max_transacciones : int
-  -_ventana_minutos : int
-  -_saldo_critico : float
-  -_sucursales_predeterminadas : List
-  +get_instancia() ConfigBanco
-  +get_limite_aml() float
-  +get_max_transacciones_ventana() int
-  +get_ventana_tiempo_minutos() int
-  +get_saldo_critico() float
-  +get_sucursales() List
-}
-
-class Logger {
-  <<Singleton>>
-  -_instancia
-  -_lock : Lock
-  -_logs : List
-  +get_instancia() Logger
-  +log(mensaje, nivel)
-  +get_logs() List
-}
-
-class DetectorFraude {
-  <<Singleton>>
-  -_instancia
-  -_lock : Lock
-  -_limite_aml : float
-  -_max_transacciones : int
-  -_ventana_minutos : int
-  -_saldo_critico : float
-  +get_instancia() DetectorFraude
-  +evaluar(cuenta, monto, canal, tipo, cuenta_destino) tuple
-}
-
-class SucursalesManager {
-  <<Singleton>>
-  -_instancia
-  -_lock : Lock
-  -_sucursales : List
-  +get_instancia() SucursalesManager
-  +agregar_sucursal(nombre)
-  +sucursales() List
-}
-
-%% ═══════════════════════════
-%%  PATRÓN 2 — FACTORY METHOD
-%% ═══════════════════════════
-
-class Operacion {
-  <<abstract>>
-  +ejecutar(cuenta_origen, monto, canal, cuenta_destino)
-}
-
-class OperacionDeposito {
-  +ejecutar(cuenta_origen, monto, canal, cuenta_destino)
-}
-
-class OperacionRetiro {
-  +ejecutar(cuenta_origen, monto, canal, cuenta_destino)
-}
-
-class OperacionTransferencia {
-  +ejecutar(cuenta_origen, monto, canal, cuenta_destino)
-}
-
-class OperacionFactory {
-  <<abstract>>
-  +crear_operacion() Operacion
-}
-
-class DepositoFactory {
-  +crear_operacion() OperacionDeposito
-}
-
-class RetiroFactory {
-  +crear_operacion() OperacionRetiro
-}
-
-class TransferenciaFactory {
-  +crear_operacion() OperacionTransferencia
-}
-
-%% ═════════════════════════════
-%%  PATRÓN 3 — ABSTRACT FACTORY
-%% ═════════════════════════════
-
-class AbstractCanalFactory {
-  <<abstract>>
-  +crear_validador() Validador
-  +crear_notificador() Notificador
-  +crear_limite() LimiteCanal
-}
-
-class WebFactory {
-  +crear_validador() ValidadorWeb
-  +crear_notificador() NotificadorWeb
-  +crear_limite() LimiteCanalWeb
-}
-
-class MovilFactory {
-  +crear_validador() ValidadorMovil
-  +crear_notificador() NotificadorMovil
-  +crear_limite() LimiteCanalMovil
-}
-
-class CajeroFactory {
-  +crear_validador() ValidadorCajero
-  +crear_notificador() NotificadorCajero
-  +crear_limite() LimiteCanalCajero
-}
-
-class CanalFactoryProducer {
-  -_fabricas : Dict
-  +get_factory(canal : String) AbstractCanalFactory
-}
-
-class Validador {
-  <<abstract>>
-  +validar(monto, tipo) tuple
-}
-
-class Notificador {
-  <<abstract>>
-  +notificar(tipo, monto, cuenta_numero)
-}
-
-class LimiteCanal {
-  <<abstract>>
-  +get_limite_maximo() float
-  +get_limite_minimo() float
-  +get_nombre_canal() String
-}
-
-class ValidadorWeb {
-  +validar(monto, tipo) tuple
-}
-
-class NotificadorWeb {
-  +notificar(tipo, monto, cuenta_numero)
-}
-
-class LimiteCanalWeb {
-  +get_limite_maximo() float
-  +get_limite_minimo() float
-  +get_nombre_canal() String
-}
-
-class ValidadorMovil {
-  +validar(monto, tipo) tuple
-}
-
-class NotificadorMovil {
-  +notificar(tipo, monto, cuenta_numero)
-}
-
-class LimiteCanalMovil {
-  +get_limite_maximo() float
-  +get_limite_minimo() float
-  +get_nombre_canal() String
-}
-
-class ValidadorCajero {
-  +validar(monto, tipo) tuple
-}
-
-class NotificadorCajero {
-  +notificar(tipo, monto, cuenta_numero)
-}
-
-class LimiteCanalCajero {
-  +get_limite_maximo() float
-  +get_limite_minimo() float
-  +get_nombre_canal() String
-}
-
-%% ══════════════════════
-%%  PATRÓN 4 — BUILDER
-%% ══════════════════════
-
-class CuentaBuilder {
-  -_numero : String
-  -_tipo : String
-  -_saldo_inicial : float
-  -_usuario : Usuario
-  -_sucursal : Sucursal
-  +numero(n: str) CuentaBuilder
-  +tipo(t: str) CuentaBuilder
-  +saldo_inicial(m: float) CuentaBuilder
-  +asociar_usuario(u: Usuario) CuentaBuilder
-  +asociar_sucursal(s: Sucursal) CuentaBuilder
-  +build() Cuenta
-}
-%% ═════════════════════════════
-%% PATRÓN 5 — ADAPTER
-%% ═════════════════════════════
-class Notificador {
-  <<abstract>>
-  +notificar(tipo: str, monto: float, cuenta_numero: str)
-}
-class SMSAdapter {
-  +notificar(tipo, monto, cuenta_numero)
-}
-class EmailAdapter {
-  +notificar(tipo, monto, cuenta_numero)
-}
-class VoucherAdapter {
-  +notificar(tipo, monto, cuenta_numero)
-}
-class NotificadorAdapterProducer {
-  +get_adapter(canal: str, usuario) Notificador
-}
-
-class ServicioSMS {
-  +send_sms(destinatario, mensaje)
-}
-class ServicioEmail {
-  +enviar_correo(asunto, cuerpo, destinatario)
-}
-class ServicioVoucherFisico {
-  +imprimir_voucher(datos_voucher)
-}
-Notificador <|-- SMSAdapter
-Notificador <|-- EmailAdapter
-Notificador <|-- VoucherAdapter
-
-SMSAdapter --> ServicioSMS : "adapta"
-EmailAdapter --> ServicioEmail : "adapta"
-VoucherAdapter --> ServicioVoucherFisico : "adapta"
-
-Transaccion --> NotificadorAdapterProducer : "usa"
-NotificadorAdapterProducer ..> Notificador : "retorna"
-
-%% ═════════════════════
-%%  ORQUESTADOR CENTRAL
-%% ═════════════════════
-
-class Transaccion {
-  +FACTORIES : Dict
-  +CANALES_VALIDOS : Set
-  +procesar(cuenta_origen, monto, canal, cuenta_destino, tipo) bool
-}
-
-%% ══════════════════════
-%%  RELACIONES — DOMINIO
-%% ══════════════════════
-
-Banco ||--o{ Sucursal : "gestiona"
-Banco ||--o{ Usuario : "registra"
-Usuario ||--o{ Cuenta : "posee"
-Sucursal ||--o{ Cuenta : "asociada a"
-
-%% ════════════════════════
-%%  RELACIONES — SINGLETON
-%% ════════════════════════
-
-ConfigBanco --> DetectorFraude : "configura"
-SucursalesManager --> Sucursal : "administra"
-Transaccion --> Logger : "usa"
-Transaccion --> DetectorFraude : "consulta"
-
-%% ═════════════════════════════
-%%  RELACIONES — FACTORY METHOD
-%% ═════════════════════════════
-
-Operacion <|-- OperacionDeposito
-Operacion <|-- OperacionRetiro
-Operacion <|-- OperacionTransferencia
-
-OperacionFactory <|-- DepositoFactory
-OperacionFactory <|-- RetiroFactory
-OperacionFactory <|-- TransferenciaFactory
-
-DepositoFactory ..> OperacionDeposito : "crea"
-RetiroFactory ..> OperacionRetiro : "crea"
-TransferenciaFactory ..> OperacionTransferencia : "crea"
-
-Transaccion --> OperacionFactory : "usa"
-OperacionDeposito --> Cuenta : "depositar()"
-OperacionRetiro --> Cuenta : "retirar()"
-OperacionTransferencia --> Cuenta : "transferir()"
-
-%% ═══════════════════════════════
-%%  RELACIONES — ABSTRACT FACTORY
-%% ═══════════════════════════════
-
-AbstractCanalFactory <|-- WebFactory
-AbstractCanalFactory <|-- MovilFactory
-AbstractCanalFactory <|-- CajeroFactory
-
-Validador <|-- ValidadorWeb
-Validador <|-- ValidadorMovil
-Validador <|-- ValidadorCajero
-
-Notificador <|-- NotificadorWeb
-Notificador <|-- NotificadorMovil
-Notificador <|-- NotificadorCajero
-
-LimiteCanal <|-- LimiteCanalWeb
-LimiteCanal <|-- LimiteCanalMovil
-LimiteCanal <|-- LimiteCanalCajero
-
-WebFactory ..> ValidadorWeb : "crea"
-WebFactory ..> NotificadorWeb : "crea"
-WebFactory ..> LimiteCanalWeb : "crea"
-
-MovilFactory ..> ValidadorMovil : "crea"
-MovilFactory ..> NotificadorMovil : "crea"
-MovilFactory ..> LimiteCanalMovil : "crea"
-
-CajeroFactory ..> ValidadorCajero : "crea"
-CajeroFactory ..> NotificadorCajero : "crea"
-CajeroFactory ..> LimiteCanalCajero : "crea"
-
-CanalFactoryProducer --> AbstractCanalFactory : "retorna"
-Transaccion --> CanalFactoryProducer : "consulta"
-
-%% ══════════════════════
-%%  RELACIONES — BUILDER
-%% ══════════════════════
-
-CuentaBuilder ..> Cuenta : "construye"
-CuentaBuilder --> Usuario : "asocia"
-CuentaBuilder --> Sucursal : "asocia"
-```
   ------------------------------
 # Documentacion de las implementaciones semana a semana 
 
