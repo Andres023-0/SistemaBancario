@@ -33,13 +33,14 @@ Este proyecto académico simula componentes clave de un entorno bancario moderno
   Se creó una fábrica por canal que produce familias coherentes de `Validador`, `Notificador` y `LimiteCanal`, garantizando reglas y comportamientos consistentes para Web, Móvil y Cajero.
 - **Builder:**  
   Se implementó un Fluent Builder para la creación de cuentas bancarias, desacoplando el proceso de construcción de su representación final. `CuentaBuilder` encadena los pasos de configuración y garantiza en `build()` que todos los datos obligatorios estén presentes.
+- **Prototype:**
+  El patrón Prototype crea nuevos objetos clonando una instancia existente. En el sistema bancario es ideal para crear nuevas cuentas a partir de plantillas preconfiguradas (PlantillaCuentaAhorro, PlantillaCuentaCorriente, PlantillaCuentaEmpresarial). Evita reconstruir toda la configuración desde cero y permite personalizar solo los campos que difieren (titular, número de cuenta).
 - **Adapter:**
   Se integraron servicios externos de notificación (SMS, Email y Voucher físico) cuyas interfaces son incompatibles con el sistema. Mediante el patrón Adapter se creó una interfaz unificada (`Notificador`) que permite al sistema trabajar de forma transparente con servicios simulados de terceros (Twilio, SendGrid, impresora de cajero). La implementación usa datos reales del usuario (`celular` y `correo`) proporcionados por la clase `Usuario`.
-- **Prototype:**
-
-
-
-
+- **Bridge:** 
+  Se implemento en la abstracción sería OperacionBancaria (con variantes como OperacionSimple u OperacionProgramada) y la implementación sería el canal de procesamiento (ProcesadorWeb, ProcesadorMovil, ProcesadorCajero). Así puedes cambiar cómo se procesa una transferencia sin tocar la lógica de negocio de la transferencia en sí.
+- **Decorator:**
+  Se implemento al momento de agregar comportamiento a objetos en tiempo de ejecución, envolviéndolos en capas. En lugar de crear subclases para cada combinación posible, se "decoran" las transacciones con características adicionales: TransaccionConLog, TransaccionConAuditoria, TransaccionConSeguro. Se pueden apilar libremente: una transferencia puede tener log + auditoría + seguro, sin modificar la clase base.
 ---
 ## Resumen de archivos del proyecto
 
