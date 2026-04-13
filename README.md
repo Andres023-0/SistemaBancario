@@ -35,6 +35,10 @@ Este proyecto académico simula componentes clave de un entorno bancario moderno
   Se implementó un Fluent Builder para la creación de cuentas bancarias, desacoplando el proceso de construcción de su representación final. `CuentaBuilder` encadena los pasos de configuración y garantiza en `build()` que todos los datos obligatorios estén presentes.
 - **Adapter:**
   Se integraron servicios externos de notificación (SMS, Email y Voucher físico) cuyas interfaces son incompatibles con el sistema. Mediante el patrón Adapter se creó una interfaz unificada (`Notificador`) que permite al sistema trabajar de forma transparente con servicios simulados de terceros (Twilio, SendGrid, impresora de cajero). La implementación usa datos reales del usuario (`celular` y `correo`) proporcionados por la clase `Usuario`.
+- **Prototype:**
+
+
+
 
 ---
 ## Resumen de archivos del proyecto
