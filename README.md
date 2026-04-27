@@ -224,7 +224,8 @@ El siguiente diagrama representa la arquitectura general del **Sistema Bancario 
     OperacionFacade --> OperacionBancaria : "usa"
     UsuarioFacade --> CuentaBuilder : "usa"
 
-<img width="8192" height="2393" alt="Diagrama" src="https://github.com/user-attachments/assets/949892d7-af6d-453b-84cf-bd1496207e01" />
+<img width="8192" height="2614" alt="Diagrama" src="https://github.com/user-attachments/assets/e434c13a-3364-48eb-a072-19b5d972a22e" />
+
 
 ---
   ------------------------------
