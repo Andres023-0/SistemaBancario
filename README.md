@@ -93,67 +93,106 @@ La siguiente tabla proporciona una visión general de los archivos clave del pro
 ## Diagrama UML — Sistema Bancario Core
 
 El siguiente diagrama representa la arquitectura general del **Sistema Bancario Core**, mostrando cómo las clases se relacionan entre sí y cómo los diez patrones de diseño coexisten y colaboran dentro del mismo sistema.
-    
-    classDiagram
-    direction TB
-
+      
+     classDiagram
+     direction TB
     %% ==================== SINGLETONS ====================
     class ConfigBanco {
         <<Singleton>>
-        + get_instancia() ConfigBanco
-        + get_limite_aml() float
+        +get_instancia() ConfigBanco
+        +get_limite_aml() float
+        +get_max_transacciones_ventana() int
     }
 
     class Logger {
         <<Singleton>>
-        + log(mensaje, nivel)
+        +get_instancia() Logger
+        +log(mensaje: str, nivel: str)
     }
 
     class DetectorFraude {
         <<Singleton>>
-        + evaluar(cuenta, monto, canal, tipo) bool
+        +get_instancia() DetectorFraude
+        +evaluar(cuenta, monto, canal, tipo, cuenta_destino?) (bool, list)
     }
 
     class SucursalesManager {
         <<Singleton>>
-        + sucursales: List~Sucursal~
+        +get_instancia() SucursalesManager
+        +sucursales: List~Sucursal~
     }
 
-    %% ==================== CREACIÓN ====================
+    %% ==================== PATRONES DE CREACIÓN ====================
+    class Usuario {
+        +nombre: str
+        +documento: str
+        +celular: str
+        +correo: str
+        +verificado_kyc: bool
+        +cuentas: List~Cuenta~
+        +verificar_kyc()
+        +agregar_cuenta(cuenta)
+    }
+
     class CuentaBuilder {
-        + numero(str) CuentaBuilder
-        + tipo(str) CuentaBuilder
-        + saldo_inicial(float) CuentaBuilder
-        + build() Cuenta
-        + clone_desde(Cuenta) Cuenta
+        +numero(str) CuentaBuilder
+        +tipo(str) CuentaBuilder
+        +saldo_inicial(float) CuentaBuilder
+        +asociar_usuario(usuario) CuentaBuilder
+        +asociar_sucursal(sucursal) CuentaBuilder
+        +build() Cuenta
+        +clone_desde(prototipo: Cuenta) Cuenta
     }
 
     class CuentaPrototypeRegistry {
-        + registrar(nombre, cuenta)
-        + get(nombre) Cuenta
+        <<Prototype Registry>>
+        +registrar(nombre: str, cuenta: Cuenta)
+        +get(nombre: str) Cuenta
+        +listar() List~str~
     }
 
     class Cuenta {
-        + numero: str
-        - _saldo: Decimal
-        + depositar(monto, canal)
-        + retirar(monto, canal)
-        + transferir(destino, monto, canal)
-        + clone(nuevo_numero) Cuenta
+        +numero: str
+        -_saldo: Decimal
+        +tipo: str
+        +transacciones: List
+        +depositar(monto: float, canal: str)
+        +retirar(monto: float, canal: str)
+        +transferir(destino: Cuenta, monto: float, canal: str)
+        +clone(nuevo_numero: str) Cuenta
+        +get_saldo_total() float
     }
 
-    %% ==================== BRIDGE ====================
+    %% ==================== ABSTRACT FACTORY ====================
+    class AbstractCanalFactory {
+        <<Abstract Factory>>
+        +crear_validador() Validador
+        +crear_notificador() Notificador
+        +crear_limite() LimiteCanal
+    }
+
+    class WebFactory
+    class MovilFactory
+    class CajeroFactory
+
+    AbstractCanalFactory <|-- WebFactory
+    AbstractCanalFactory <|-- MovilFactory
+    AbstractCanalFactory <|-- CajeroFactory
+
+    %% ==================== BRIDGE (Eje Central del Sistema) ====================
     class OperacionBancaria {
         <<Abstract>>
-        - _canal: CanalBancario
-        + ejecutar(cuenta, monto, destino?) bool
+        -_canal: CanalBancario
+        +ejecutar(cuenta_origen, monto, cuenta_destino?) bool
     }
 
     class CanalBancario {
         <<Interface>>
-        + validar(monto, tipo) bool
-        + notificar(tipo, monto, cuenta, usuario)
-        + get_nombre() str
+        +validar(monto: float, tipo: str) (bool, str)
+        +notificar(tipo: str, monto: float, cuenta_numero: str, usuario)
+        +get_nombre() str
+        +get_limite_maximo() float
+        +get_limite_minimo() float
     }
 
     class Deposito
@@ -172,13 +211,27 @@ El siguiente diagrama representa la arquitectura general del **Sistema Bancario 
     CanalBancario <|-- CanalMovil
     CanalBancario <|-- CanalCajero
 
-    OperacionBancaria o-- CanalBancario : "Bridge"
+    OperacionBancaria "1" o-- "1" CanalBancario : "Bridge - referencia al implementador"
+
+    %% ==================== FACTORY METHOD ====================
+    class OperacionFactory {
+        <<Abstract>>
+        +crear_operacion() Operacion
+    }
+
+    class DepositoFactory
+    class RetiroFactory
+    class TransferenciaFactory
+
+    OperacionFactory <|-- DepositoFactory
+    OperacionFactory <|-- RetiroFactory
+    OperacionFactory <|-- TransferenciaFactory
 
     %% ==================== DECORATOR ====================
     class OperacionDecorator {
         <<Abstract>>
-        - _operacion: Operacion
-        + ejecutar()
+        -_operacion: Operacion
+        +ejecutar(...)
     }
 
     class LogTiempoDecorator
@@ -189,19 +242,26 @@ El siguiente diagrama representa la arquitectura general del **Sistema Bancario 
     OperacionDecorator <|-- AuditoriaDecorator
     OperacionDecorator <|-- ReintentoDecorator
 
-    %% ==================== FACADE + ADAPTER + COMPOSITE ====================
-    class OperacionFacade
-    class UsuarioFacade
-
+    %% ==================== ADAPTER ====================
     class NotificadorAdapterProducer {
-        + get_adapter(canal, usuario) Notificador
+        +get_adapter(canal: str, usuario) Notificador
     }
 
+    %% ==================== FACADE ====================
+    class OperacionFacade {
+        <<Facade>>
+    }
+
+    class UsuarioFacade {
+        <<Facade>>
+    }
+
+    %% ==================== COMPOSITE ====================
     class ComponenteBancario {
         <<Interface>>
-        + get_nombre() str
-        + get_saldo_total() float
-        + listar(nivel)
+        +get_nombre() str
+        +get_saldo_total() float
+        +listar(nivel: int)
     }
 
     class Banco
@@ -211,18 +271,41 @@ El siguiente diagrama representa la arquitectura general del **Sistema Bancario 
     ComponenteBancario <|-- Sucursal
     ComponenteBancario <|-- Cuenta
 
-    %% ==================== RELACIONES ====================
-    Usuario "1" *-- "0..*" Cuenta : "posee"
-    Sucursal "1" *-- "0..*" Cuenta : "contiene"
-    Banco "1" *-- "0..*" Sucursal : "tiene"
+    %% ==================== RELACIONES PRINCIPALES ====================
 
+    Banco "1" *-- "0..*" Sucursal : "tiene"
+    Sucursal "1" *-- "0..*" Cuenta : "contiene"
+    Usuario "1" *-- "0..*" Cuenta : "posee"
+
+    CuentaBuilder ..> CuentaPrototypeRegistry : "usa para clonar"
     CuentaBuilder --> Usuario : "asocia"
     CuentaBuilder --> Sucursal : "asocia"
-    CuentaBuilder ..> Cuenta : "construye"
-    CuentaBuilder ..> CuentaPrototypeRegistry : "usa para clonar"
+    CuentaBuilder ..> Cuenta : "construye / clona"
 
+    Transaccion --> OperacionBancaria : "usa Bridge"
+    OperacionFacade --> Transaccion : "coordina"
     OperacionFacade --> OperacionBancaria : "usa"
     UsuarioFacade --> CuentaBuilder : "usa"
+
+    OperacionBancaria ..> NotificadorAdapterProducer : "usa Adapter para notificar"
+    OperacionBancaria ..> DetectorFraude : "usa Singleton"
+    OperacionBancaria ..> Logger : "usa Singleton"
+
+    OperacionDecorator o-- "decora" OperacionBancaria : "envuelve"
+
+    Transaccion ..> OperacionFactory : "usa Factory Method"
+
+    AbstractCanalFactory ..> CanalBancario : "produce familias"
+
+    %% Clases de apoyo
+    class Transaccion
+    class Notificador
+    class Validador
+    class LimiteCanal
+
+    note for OperacionBancaria "Patrón Bridge - Desacopla operación del canal"
+    note for ComponenteBancario "Patrón Composite - Jerarquía Banco → Sucursal → Cuenta"
+    note for CuentaBuilder "Patrón Builder + Prototype"
 
 <img width="8192" height="2614" alt="Diagrama" src="https://github.com/user-attachments/assets/e434c13a-3364-48eb-a072-19b5d972a22e" />
 
