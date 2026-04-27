@@ -58,6 +58,14 @@ El proyecto **Sistema Bancario Core** es una demostración práctica de cómo lo
 | **Composite**             | Permite tratar de forma uniforme objetos individuales y composiciones de objetos. Se aplica en la jerarquía `Banco` → `Sucursal` → `Cuenta` mediante la interfaz `ComponenteBancario`, permitiendo consultar saldos totales y visualizar la estructura completa del banco de manera recursiva y uniforme. |
 ---
 
+### Patrones No Implementados
+
+| Patrón      | Razón principal de no implementación |
+|-------------|--------------------------------------|
+| **Flyweight** | Ya existe de forma implícita en `CanalBancarioProducer` y `CanalFactoryProducer`, que reutilizan las mismas instancias de canales en todo el sistema. Añadirlo formalmente sería redundante. |
+| **Proxy**   | Sus responsabilidades (control de acceso, validaciones y auditoría) ya están cubiertas por **Bridge**, **Decorator**, **DetectorFraude** y **CuentaBuilder**. No aporta beneficio significativo en la versión actual. |
+
+---
 ## Resumen de Archivos del Proyecto
 
 La siguiente tabla proporciona una visión general de los archivos clave del proyecto, su rol principal y los patrones de diseño asociados:
