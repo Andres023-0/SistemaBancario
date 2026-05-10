@@ -14,14 +14,27 @@ Institución:
 
 ---
 
-## Simulación de un Sistema Bancario
+## Sistema Bancario
 
-Este proyecto académico, denominado "Sistema Bancario Core", es una simulación avanzada de los componentes fundamentales de un entorno bancario moderno. Su propósito principal es ilustrar la aplicación práctica de principios de diseño de software y patrones arquitectónicos en un contexto financiero regulado, abordando desafíos reales como el cumplimiento normativo (KYC y AML), la detección de fraude en tiempo real y la gestión segura de transacciones a través de múltiples canales.
 
-El objetivo central es demostrar cómo la implementación estratégica de diez patrones de diseño — Singleton, Factory Method, Abstract Factory, Builder, Prototype, Adapter, Bridge, Decorator, Facade y Composite — contribuye a la construcción de un software de alta calidad: modular, mantenible, extensible y robusto. Estos patrones permiten eliminar code smells, promover una arquitectura limpia y lograr un alto nivel de desacoplamiento entre componentes, facilitando la evolución futura del sistema.
+El Sistema Bancario es una plataforma de gestión financiera diseñada para ofrecer a sus usuarios una experiencia completa, confiable y segura en el manejo de sus operaciones bancarias cotidianas. A través de él, los usuarios pueden registrarse, administrar sus cuentas, realizar depósitos, retiros y transferencias de forma ágil, todo dentro de un entorno que prioriza la claridad, la trazabilidad y la seguridad de cada transacción.
+El sistema está concebido para adaptarse con naturalidad a las necesidades de cualquier usuario, sin importar su perfil financiero. Su arquitectura modular garantiza que cada operación se ejecute de manera independiente y ordenada, lo que se traduce en un servicio estable, consistente y preparado para crecer junto con las exigencias del negocio.
+Más allá de sus funcionalidades actuales, el Sistema Bancario está construido sobre bases sólidas que permiten incorporar nuevas capacidades en el futuro: desde la integración con plataformas digitales y servicios web, hasta la generación de reportes financieros avanzados y la persistencia robusta de datos. Una solución que no solo responde al presente, sino que anticipa el mañana.
 
----
+--
+##OBJETIVO
 
+Desarrollar un Sistema Bancario que centralice y automatice la gestión financiera de cuentas a volumen, garantizando la verificación de identidad de sus usuarios, el control preciso de sus operaciones y la trazabilidad completa de cada movimiento, con el fin de ofrecer un entorno bancario confiable, seguro y eficiente.
+
+### OBJETIVOS ESPECIFICOS
+
+1.	Implementar un módulo de verificación KYC (Know Your Customer) que valide la identidad de cada usuario antes de habilitarlo para operar dentro del sistema, asegurando el cumplimiento de estándares de seguridad y normativa financiera.
+2.	Proveer a los usuarios una consulta de saldo en tiempo real que refleje de manera precisa el estado actual de sus cuentas, permitiendo una toma de decisiones financieras informada y oportuna.
+3.	Habilitar la consulta detallada de movimientos por cuenta, ofreciendo un historial claro y ordenado de las transacciones realizadas para facilitar el seguimiento y el control financiero personal o empresarial.
+4.	Garantizar la trazabilidad completa de cada movimiento registrado en el sistema, de modo que sea posible auditar, verificar y reconstruir el origen, destino y estado de cualquier operación en cualquier momento.
+5.	Gestionar cuentas a volumen de forma eficiente, permitiendo la administración simultánea de múltiples cuentas con alto flujo transaccional sin comprometer el rendimiento ni la integridad de los datos.
+
+--
 ## Módulos Clave y Funcionalidades Financieras
 
 El sistema bancario simulado integra funcionalidades esenciales que reflejan operaciones reales del sector financiero, con un fuerte enfoque en la precisión, la seguridad y el cumplimiento normativo. Las principales capacidades del sistema son las siguientes:
@@ -89,6 +102,13 @@ La siguiente tabla proporciona una visión general de los archivos clave del pro
 | `main.py`                           | Cliente                                 | Punto de entrada del sistema. Interactúa con el usuario a través de la consola y utiliza las fachadas. |
 
 ---
+
+##Conclusiones
+
+El Sistema Bancario demuestra que los patrones de diseño trascienden la teoría: son respuestas precisas a problemas reales que emergen durante el desarrollo. Cada uno de los diez patrones implementados no fue elegido por cumplir un requisito, sino porque resolvió una necesidad concreta que el sistema mismo planteó a lo largo de su construcción.
+El resultado es una plataforma donde cada decisión de diseño tiene una razón de ser. Agregar una nueva funcionalidad no implica alterar lo que ya funciona; extender el sistema es una consecuencia natural de su estructura, no un riesgo. Eso es lo que distingue un software bien diseñado de uno que simplemente opera.
+Este proyecto deja además una lección de fondo: la arquitectura no es un paso previo al desarrollo, es parte del desarrollo mismo. Cuando los patrones se integran con coherencia, el sistema deja de ser una colección de piezas y se convierte en un todo con una sola lógica. Los cimientos están. Lo que viene después es solo crecer.
+
 
 ## Diagrama UML — Sistema Bancario Core
 
@@ -311,7 +331,7 @@ El siguiente diagrama representa la arquitectura general del **Sistema Bancario 
 
 
 ---
-  ------------------------------
+  -----------------------------
 # Documentacion de las implementaciones semana a semana 
 
 https://github.com/Andres023-0/SistemaBancario/blob/main/Documentacion_Implementacion.docx
