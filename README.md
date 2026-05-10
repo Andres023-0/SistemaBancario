@@ -21,7 +21,6 @@ El Sistema Bancario es una plataforma de gestión financiera diseñada para ofre
 El sistema está concebido para adaptarse con naturalidad a las necesidades de cualquier usuario, sin importar su perfil financiero. Su arquitectura modular garantiza que cada operación se ejecute de manera independiente y ordenada, lo que se traduce en un servicio estable, consistente y preparado para crecer junto con las exigencias del negocio.
 Más allá de sus funcionalidades actuales, el Sistema Bancario está construido sobre bases sólidas que permiten incorporar nuevas capacidades en el futuro: desde la integración con plataformas digitales y servicios web, hasta la generación de reportes financieros avanzados y la persistencia robusta de datos. Una solución que no solo responde al presente, sino que anticipa el mañana.
 
---
 ##OBJETIVO
 
 Desarrollar un Sistema Bancario que centralice y automatice la gestión financiera de cuentas a volumen, garantizando la verificación de identidad de sus usuarios, el control preciso de sus operaciones y la trazabilidad completa de cada movimiento, con el fin de ofrecer un entorno bancario confiable, seguro y eficiente.
