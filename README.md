@@ -101,7 +101,7 @@ La siguiente tabla proporciona una visión general de los archivos clave del pro
 
 ---
 
-##Conclusiones
+## Conclusiones
 
 El Sistema Bancario demuestra que los patrones de diseño trascienden la teoría: son respuestas precisas a problemas reales que emergen durante el desarrollo. Cada uno de los diez patrones implementados no fue elegido por cumplir un requisito, sino porque resolvió una necesidad concreta que el sistema mismo planteó a lo largo de su construcción.
 El resultado es una plataforma donde cada decisión de diseño tiene una razón de ser. Agregar una nueva funcionalidad no implica alterar lo que ya funciona; extender el sistema es una consecuencia natural de su estructura, no un riesgo. Eso es lo que distingue un software bien diseñado de uno que simplemente opera.
