@@ -24,30 +24,42 @@ Más allá de sus funcionalidades actuales, el Sistema Bancario UTS está ciment
 
 ## Objetivos del Proyecto
 
-El objetivo primordial del **Sistema Bancario UTS** es centralizar y automatizar la gestión financiera de cuentas a gran escala mediante una arquitectura de software avanzada. El sistema garantiza la verificación rigurosa de la identidad de los usuarios, el control preciso de las operaciones y la trazabilidad absoluta de cada movimiento, proporcionando así un entorno bancario altamente confiable, seguro y eficiente.
+El objetivo primordial del Sistema Bancario UTS es centralizar y automatizar la gestión financiera de cuentas a gran escala mediante una arquitectura de software avanzada. El sistema garantiza la verificación rigurosa de la identidad de los usuarios, el control preciso de las operaciones y la trazabilidad absoluta de cada movimiento, proporcionando así un entorno bancario altamente confiable, seguro y eficiente.
 
-### Objetivos Específicos
+## Objetivos Específicos
 
-Para alcanzar la visión del proyecto, se han definido y ejecutado los siguientes objetivos técnicos y funcionales:
+Para alcanzar la visión del proyecto, se han definido y ejecutado los siguientes siete objetivos específicos que cubren operatividad, seguridad, auditoría y escalabilidad:
 
-#### Gestión y Operación Bancaria
+Gestión y Operación Bancaria
 | Objetivo | Implementación Técnica y Valor Agregado |
-| :--- | :--- |
-| **Verificación KYC** | Validar la identidad del usuario mediante un módulo **Know Your Customer** obligatorio antes de habilitar su operatividad, asegurando el cumplimiento normativo. |
-| **Consulta en Tiempo Real** | Suministrar información financiera precisa mediante el patrón **Composite**, permitiendo decisiones informadas basadas en el estado real de los activos. |
-| **Historial y Trazabilidad** | Habilitar consultas detalladas de transacciones reforzadas con el patrón **Observer**, registrando cada evento de forma independiente y segura. |
-| **Auditoría y Reconstrucción** | Garantizar la integridad mediante el patrón **Command**, permitiendo auditar el origen de los fondos y reconstruir estados históricos con mecanismos de *Undo/Redo*. |
-| **Gestión a Volumen** | Optimizar el rendimiento para múltiples cuentas con alto flujo transaccional mediante una arquitectura basada en los patrones **Bridge** y **Facade**. |
+| --- | --- |
+| **Verificación de Identidad y Cumplimiento Normativo (KYC)** | Implementar un proceso obligatorio de verificación de identidad mediante el módulo **Know Your Customer** que valide a los usuarios antes de habilitar su operatividad. Utiliza el patrón **Builder** para asegurar que todas las cuentas cumplan con requisitos de KYC, garantizando cumplimiento normativo, reducción de fraude y confianza regulatoria. |
+| **Consulta de Información Financiera en Tiempo Real** | Proporcionar acceso inmediato y preciso a información financiera (saldos, tipos de cuenta, estado) a través de múltiples canales (Web, Móvil, Cajero). Implementado mediante el patrón **Composite** para consultas jerárquicas desde nivel de banco hasta cuenta individual, permitiendo decisiones financieras informadas y oportunas. |
+| **Historial Completo de Transacciones y Trazabilidad** | Mantener un registro detallado y auditable de todas las transacciones realizadas, incluyendo fecha, hora, tipo de operación, monto, canal utilizado y saldo resultante. Reforzado con el patrón **Observer** que registra cada evento de forma independiente y segura, facilitando auditoría completa y resolución de disputas. |
+| **Auditoría Avanzada con Capacidad de Reversión** | Garantizar la integridad mediante el patrón **Command**, permitiendo que administradores deshacer o reejecutar transacciones en caso de errores operacionales. Mantiene un registro completo de todas las acciones (Undo/Redo) para auditoría y cumplimiento normativo, permitiendo auditar el origen de los fondos y reconstruir estados históricos. |
+| **Gestión Eficiente de Múltiples Cuentas y Alto Volumen Transaccional** | Administrar eficientemente múltiples cuentas con alto flujo transaccional, permitiendo que el sistema procese depósitos, retiros y transferencias de forma independiente según el canal de acceso. Implementado mediante los patrones **Bridge** y **Facade**, optimizando rendimiento sin comprometer consistencia de datos ni velocidad de respuesta. |
+| **Detección y Prevención de Fraude en Tiempo Real** | Implementar un motor de detección automática que evalúe cada transacción contra cinco reglas críticas: límites AML ($10,000), frecuencia anómala (>5 transacciones/5 min), saldos críticos, canales inusuales e historial de destino. Basado en el patrón **Singleton**, bloquea operaciones sospechosas automáticamente, reduciendo significativamente riesgos de fraude y cumpliendo normativas AML. |
+| **Gestión Flexible de Productos Financieros (Préstamos y Estrategias de Interés)** | Permitir que la institución ofrezca productos crediticios con diferentes estrategias de cálculo de intereses (tasa fija o variable). Implementado mediante el patrón **Strategy**, habilita simulaciones de escenarios, registro de pagos, abonos manuales y comparación de opciones, adaptándose a diferentes perfiles de clientes y políticas crediticias. |
 
-#### Ingeniería y Arquitectura de Software
-1. **Desacoplamiento Estructural:** Implementar el patrón *Bridge* para separar las operaciones bancarias de los canales de acceso, permitiendo una evolución independiente de ambos componentes.
-2. **Precisión Financiera:** Asegurar la integridad de todos los cálculos monetarios mediante el uso de tipos de datos *Decimal*, eliminando errores de redondeo en transacciones críticas.
-3. **Control de Ciclo de Vida:** Administrar las restricciones de las cuentas mediante el patrón *State*, garantizando que solo se realicen operaciones permitidas según el estado actual.
-4. **Seguridad Proactiva:** Integrar un motor de detección de fraude basado en el patrón *Singleton* para evaluar riesgos y comportamientos inusuales en tiempo real.
-5. **Extensibilidad Transversal:** Aplicar el patrón *Decorator* para añadir capacidades de auditoría y medición de rendimiento sin modificar el código base de las operaciones.
-6. **Integridad en la Construcción:** Estandarizar la creación de cuentas mediante el patrón *Builder*, asegurando que cumplan con todas las reglas de negocio antes de su activación.
-7. **Integración Multicanal:** Desarrollar un sistema de notificaciones desacoplado utilizando el patrón *Adapter* para facilitar la conexión con diversos proveedores externos.
-8. **Resiliencia Operativa:** Establecer mecanismos de recuperación y seguimiento histórico mediante comandos ejecutables y reversibles.
+## Ingeniería y Arquitectura de Software
+
+Los siguientes objetivos técnicos garantizan que la arquitectura sea robusta, extensible y alineada con principios SOLID:
+
+1. Desacoplamiento Estructural: Implementar el patrón Bridge para separar las operaciones bancarias de los canales de acceso, permitiendo una evolución independiente de ambos componentes. Este patrón es el eje central del sistema, facilitando la adición de nuevos canales o operaciones sin modificar código existente.
+
+2. Precisión Financiera: Asegurar la integridad de todos los cálculos monetarios mediante el uso de tipos de datos Decimal con redondeo ROUND_HALF_UP, eliminando errores de redondeo en transacciones críticas. Esto garantiza exactitud a dos decimales en todas las operaciones financieras.
+
+3. Control de Ciclo de Vida: Administrar las restricciones de las cuentas mediante el patrón State, garantizando que solo se realicen operaciones permitidas según el estado actual (Activa, Bloqueada, Suspendida, Cerrada). Elimina condicionales complejos y asegura que las reglas de negocio se apliquen consistentemente.
+
+4. Seguridad Proactiva: Integrar un motor de detección de fraude basado en el patrón Singleton para evaluar riesgos y comportamientos inusuales en tiempo real. Utiliza Double-Checked Locking para garantizar seguridad en entornos multihilo y una única fuente de verdad para políticas de fraude.
+
+5. Extensibilidad Transversal: Aplicar el patrón Decorator para añadir dinámicamente capacidades de auditoría, medición de tiempo de ejecución y reintentos sin modificar el código base de las operaciones. Cumple con el principio Open/Closed al extender funcionalidad sin modificar clases existentes.
+
+6. Integridad en la Construcción: Estandarizar la creación de cuentas mediante el patrón Builder, asegurando que cumplan con todas las reglas de negocio (KYC, usuario, sucursal) antes de su activación. Centraliza validaciones complejas en una sola clase especializada, fortaleciendo el principio Single Responsibility.
+
+7. Integración Multicanal: Desarrollar un sistema de notificaciones desacoplado utilizando el patrón Adapter para facilitar la conexión con diversos proveedores externos (Email, SMS, Voucher). Permite cambiar proveedores sin alterar la lógica de negocio, cumpliendo con el principio Open/Closed.
+
+8. Resiliencia Operativa: Establecer mecanismos de recuperación y seguimiento histórico mediante el patrón Command, encapsulando transacciones como objetos ejecutables y reversibles. Habilita el historial de movimientos, auditoría completa y la capacidad de deshacer/rehacer operaciones sin pérdida de integridad.
 
 ## Módulos Clave y Funcionalidades Financieras
 
