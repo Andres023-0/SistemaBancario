@@ -202,10 +202,10 @@ classDiagram
     class NotificadorAdapter { <<Interface>> +notificar() }
     class OperacionDecorator { <<Abstract>> -_operacion: Operacion +ejecutar() }
     class ComponenteBancario { <<Interface>> +get_saldo_total() +listar() }
-    class OperacionFacade { +depositar() +retirar() +transferir() }
+    class OperacionFacade { +depositar() +retirar() +transferir() +generar_reporte() }
     class UsuarioFacade { +registrar_usuario() +crear_cuenta() }
 
-    class Cuenta { +depositar() +retirar() +transferir() +clone() }
+    class Cuenta { +depositar() +retirar() +transferir() +clone() +set_estado() +crear_snapshot() }
     class Banco { +agregar_usuario() +buscar_cuenta() }
     class Sucursal { +agregar_cuenta() +get_saldo_total() }
 
@@ -228,10 +228,15 @@ classDiagram
     class InteresEstrategiaVariable
     class Prestamo { -_estrategia: EstrategiaInteres +registrar_pago() }
 
-    class MementoEstadoCuenta { +get_estado() +get_fecha() }
+    class MementoEstadoCuenta { +get_estado() +get_fecha() +get_motivo() }
     class ValidacionHandler { <<Abstract>> +manejar() +set_siguiente() }
+    class ValidadorEstado
+    class ValidadorSaldo
+    class ValidadorLimiteCanal
+    class ValidadorFrecuencia
+    class ValidadorDestino
     class CadenaValidacionFactory { +crear_cadena() }
-    class GeneradorReporte { <<Abstract>> +generar() +recopilar() +filtrar() +formatear() }
+    class GeneradorReporte { <<Abstract>> +generar() +recopilar() +filtrar() +calcular() +formatear() +finalizar() }
     class ReporteMovimientos
     class ReportePrestamos
     class ReporteSucursal
@@ -241,7 +246,6 @@ classDiagram
     ConfigBanco ..> SucursalesManager : configura
     Logger <.. Cuenta : usa
     Logger <.. OperacionBancaria : usa
-    GestorMementos ..> MementoEstadoCuenta : gestiona
 
     OperacionBancaria "1" o-- "1" CanalBancario : Bridge
     OperacionBancaria <|-- Deposito
@@ -303,31 +307,37 @@ classDiagram
     EstrategiaInteres <|-- InteresEstrategiaVariable
 
     Cuenta ..> MementoEstadoCuenta : crea snapshot
-    GestorMementos o-- MementoEstadoCuenta : almacena
+    Cuenta ..> GestorMementos : delega snapshot
+    GestorMementos o-- MementoEstadoCuenta : almacena pila
 
+    OperacionFacade ..> CadenaValidacionFactory : valida antes de operar
+    CadenaValidacionFactory ..> ValidacionHandler : encadena
     ValidacionHandler <|-- ValidadorEstado
     ValidacionHandler <|-- ValidadorSaldo
     ValidacionHandler <|-- ValidadorLimiteCanal
     ValidacionHandler <|-- ValidadorFrecuencia
     ValidacionHandler <|-- ValidadorDestino
-    CadenaValidacionFactory ..> ValidacionHandler : encadena
-    ValidacionHandler ..> Cuenta : valida
+    ValidadorEstado ..> Cuenta : consulta estado
+    ValidadorSaldo ..> Cuenta : consulta saldo
+    ValidadorLimiteCanal ..> CanalBancario : consulta limite
+    ValidadorFrecuencia ..> Cuenta : consulta historial
 
+    OperacionFacade ..> GeneradorReporte : genera reporte
+    GeneradorReporte ..> Banco : consulta datos
     GeneradorReporte <|-- ReporteMovimientos
     GeneradorReporte <|-- ReportePrestamos
     GeneradorReporte <|-- ReporteSucursal
     GeneradorReporte <|-- ReporteUsuario
-    GeneradorReporte ..> Banco : consulta datos
 
     note for OperacionBancaria "Bridge: eje central del sistema"
     note for Cuenta "Observer + State + Composite + Memento"
     note for HistorialComandos "Invoker: pila undo/redo"
-    note for GeneradorReporte "6 pasos: recopilar-filtrar-calcular-formatear"
+    note for GestorMementos "Almacena hasta 10 snapshots por cuenta"
     note for CadenaValidacionFactory "5 eslabones: estado-saldo-canal-frecuencia-destino"
-
----
-
-<img width="8192" height="1900" alt="Diagrama" src="https://github.com/user-attachments/assets/75cd7ab3-99de-43ae-9fbf-a5897929ad62" />
+    note for GeneradorReporte "6 pasos: inicializar-recopilar-filtrar-calcular-formatear-finalizar"
+    note for OperacionFacade "Punto de entrada: orquesta Chain, Template y Bridge"
+    
+<img width="8192" height="2250" alt="Diagrama" src="https://github.com/user-attachments/assets/9ca71361-bb5e-4e1b-9b79-a39994e7f6d0" />
 
 ---
   -----------------------------
