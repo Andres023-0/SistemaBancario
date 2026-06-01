@@ -15,32 +15,29 @@ Institución:
 ---
 
 ## Sistema Bancario UTS: Una Plataforma Financiera Robusta y Extensible
-
-El **Sistema Bancario UTS** es una plataforma de gestión financiera integral, meticulosamente diseñada para proporcionar una experiencia de usuario completa, confiable y segura en la administración de operaciones bancarias cotidianas. Este sistema permite a los usuarios registrarse, gestionar sus cuentas, y ejecutar transacciones fundamentales como depósitos, retiros y transferencias con agilidad, todo ello en un entorno que prioriza la **claridad, trazabilidad y seguridad** de cada movimiento financiero.
-
-La arquitectura del Sistema Bancario UTS se distingue por su **diseño modular y la aplicación estratégica de 14 patrones de diseño de software** (GoF), incluyendo Singleton, Factory Method, Abstract Factory, Builder, Adapter, Prototype, Bridge, Decorator, Facade, Composite, Observer, Strategy, Command y State. Esta implementación avanzada garantiza que cada operación se ejecute de manera independiente y ordenada, resultando en un servicio estable, consistente y altamente adaptable a las demandas cambiantes del negocio. La modularidad y el desacoplamiento inherentes a estos patrones facilitan la extensibilidad, permitiendo la integración fluida de nuevas funcionalidades y la evolución del sistema sin comprometer su integridad.
-
+El Sistema Bancario UTS es una plataforma de gestión financiera integral, meticulosamente diseñada para proporcionar una experiencia de usuario completa, confiable y segura en la administración de operaciones bancarias cotidianas. Este sistema permite a los usuarios registrarse, gestionar sus cuentas, y ejecutar transacciones fundamentales como depósitos, retiros y transferencias con agilidad, todo ello en un entorno que prioriza la claridad, trazabilidad y seguridad de cada movimiento financiero.
+La arquitectura del Sistema Bancario UTS se distingue por su diseño modular y la aplicación estratégica de 17 patrones de diseño de software (GoF), incluyendo Singleton, Factory Method, Abstract Factory, Builder, Adapter, Prototype, Bridge, Decorator, Facade, Composite, Observer, Strategy, Command, State, Memento, Chain of Responsibility y Template Method. Esta implementación avanzada garantiza que cada operación se ejecute de manera independiente y ordenada, resultando en un servicio estable, consistente y altamente adaptable a las demandas cambiantes del negocio. La modularidad y el desacoplamiento inherentes a estos patrones facilitan la extensibilidad, permitiendo la integración fluida de nuevas funcionalidades y la evolución del sistema sin comprometer su integridad.
 Más allá de sus funcionalidades actuales, el Sistema Bancario UTS está cimentado sobre principios de diseño que anticipan futuras expansiones. Su estructura robusta soporta la incorporación de capacidades avanzadas, tales como la integración con diversas plataformas digitales, la generación de reportes financieros sofisticados y una persistencia de datos resiliente. Esta plataforma no solo satisface las necesidades presentes, sino que está preparada para escalar y evolucionar, asegurando su relevancia y eficiencia a largo plazo en el dinámico panorama financiero.
 
 ## Objetivos del Proyecto
 
-El objetivo primordial del Sistema Bancario UTS es centralizar y automatizar la gestión financiera de cuentas a gran escala mediante una arquitectura de software avanzada. El sistema garantiza la verificación rigurosa de la identidad de los usuarios, el control preciso de las operaciones y la trazabilidad absoluta de cada movimiento, proporcionando así un entorno bancario altamente confiable, seguro y eficiente.
+El objetivo primordial del Sistema Bancario UTS es centralizar y automatizar la gestión financiera de cuentas a gran escala mediante una arquitectura de software avanzada. El sistema garantiza la verificación rigurosa de la identidad de los usuarios, el control preciso de las operaciones y la trazabilidad absoluta de cada movimiento, proporcionando así un entorno bancario académico altamente confiable, seguro y eficiente, sustentado en la implementación coordinada de 17 patrones de diseño GoF y principios SOLID.
 
 ## Objetivos Específicos
 
 Para alcanzar la visión del proyecto, se han definido y ejecutado los siguientes siete objetivos específicos que cubren operatividad, seguridad, auditoría y escalabilidad:
-
-Gestión y Operación Bancaria
-| # | Objetivo | Descripción |
-| --- | --- | --- |
-| 1 | **Verificación de Identidad y Cumplimiento Normativo (KYC)** | Implementar un módulo de verificación KYC que valide la identidad de cada usuario antes de permitir la apertura de cuentas, realización de transacciones y otros movimientos internos cumpliendo estándares básicos de seguridad. |
-| 2 | **Consulta de Información Financiera en Tiempo Real** | Proveer consultas de saldo en tiempo real a nivel de cuenta, sucursal y banco completo, aprovechando la jerarquía Banco–Sucursal–Cuenta mediante el patrón Composite. |
-| 3 | **Historial Completo de Transacciones y Trazabilidad Acompañado de Auditoría Avanzada** | Consulta detallada del historial de movimientos por cuenta, ofreciendo un historial claro, ordenado y auditable de todas las transacciones realizadas. Cada registro incluye fecha, hora, tipo de operación, monto, canal utilizado y saldo resultante, facilitando su proceso de verificación reconstruyendo su origen, destino y estado de cualquier operación en cualquier momento. |
-| 4 | **Gestión Eficiente de Múltiples Cuentas y Alto Volumen Transaccional** | Gestionar múltiples cuentas a alto volumen transaccional de forma eficiente, permitiendo la administración simultánea de las mismas teniendo en cuenta su alto flujo transaccional sin comprometer el rendimiento ni la integridad de los datos. |
-| 5 | **Detección y Prevención de Fraude en Tiempo Real** | Implementar un motor de detección automática que evalúe cada transacción contra cinco reglas críticas de riesgo: límites AML ($10,000), frecuencia anómala (más de 5 transacciones en 5 minutos), saldos críticos, canales inusuales e historial de destino. El sistema bloquea automáticamente operaciones sospechosas y notifica al usuario, reduciendo significativamente los riesgos de fraude y cumpliendo normativas AML (Anti-Lavado de Dinero). |
-| 6 | **Implementación de Patrones de Diseño** | Integrar y documentar los catorce patrones de diseño dentro del flujo del sistema bancario, evidenciando el problema resuelto y la solución aplicada por cada patrón y principios SOLID para lograr un entorno bancario académico confiable, seguro y extensible. |
-| 7 | **Implementación de Préstamos con Intereses Fijos y Variables** | Desarrollar un módulo de gestión de préstamos que permita calcular y aplicar estrategias de interés fijo y variable mediante el patrón Strategy, habilitando simulaciones de escenarios reales con registro de pagos, abonos mensuales y comparación de opciones según el perfil del cliente. |
-
+| # | Objetivo |
+|---|----------|
+| 1 | Validar la identidad de cada usuario mediante un módulo de verificación KYC antes de permitir el registro, la apertura de cuentas y la realización de cualquier operación financiera, garantizando el cumplimiento de estándares básicos de seguridad e integridad desde el primer acceso al sistema. |
+| 2 | Proveer consultas de saldo en tiempo real a nivel de cuenta individual, sucursal y banco completo, reflejando de forma inmediata cada depósito, retiro o transferencia ejecutada dentro del sistema, de modo que el docente pueda observar el estado financiero actualizado en cualquier nivel de la jerarquía organizacional. |
+| 3 | Ofrecer un historial detallado, ordenado cronológicamente y auditable de todos los movimientos realizados por cada cuenta, permitiendo al docente rastrear el origen, destino, monto y estado de cada transacción registrada en el sistema. |
+| 4 | Administrar de forma simultánea múltiples cuentas bajo un alto volumen de operaciones concurrentes, asegurando que la ejecución paralela de transacciones no comprometa la consistencia de los saldos ni la integridad de los datos almacenados en el sistema. |
+| 5 | Detectar y bloquear automáticamente transacciones sospechosas mediante la evaluación de cinco reglas de riesgo: montos superiores al límite AML de $10,000, frecuencia anómala de operaciones, saldos en estado crítico, uso de canales inusuales e historial negativo del destino, generando alertas en tiempo real ante cualquier anomalía. |
+| 6 | Calcular y aplicar sobre los préstamos otorgados tanto tasas de interés fijas como variables, brindando al usuario la posibilidad de seleccionar la modalidad que mejor se ajuste a su perfil financiero y visualizando el impacto de cada estrategia sobre el valor total del crédito. |
+| 7 | Someter cada transacción a una secuencia de cinco validaciones previas a su ejecución —estado de la cuenta, disponibilidad de saldo, límites del canal utilizado, frecuencia de operaciones y verificación de la cuenta destino— rechazando automáticamente cualquier movimiento que no supere todos los criterios establecidos. |
+| 8 | Registrar automáticamente cada cambio de estado de una cuenta bancaria y permitir su restauración a cualquier punto previo de su historial, brindando al sistema la capacidad de revertir errores operativos sin pérdida de información ni afectación a otros registros. |
+| 9 | Generar cuatro tipos de reportes bancarios estructurados —de movimientos, préstamos, sucursal y usuario— bajo un esquema de proceso unificado que garantice coherencia en la presentación de la información y facilite la supervisión y toma de decisiones por parte del docente. |
+| 10 | Notificar a los usuarios en tiempo real sobre el resultado de cada operación ejecutada —depósitos, retiros, transferencias y cambios de estado— a través de los canales disponibles (web, móvil y cajero), asegurando que cada acción financiera quede debidamente comunicada y registrada en el sistema. |
 ## Ingeniería y Arquitectura de Software
 
 Los siguientes objetivos técnicos garantizan que la arquitectura sea robusta, extensible y alineada con principios SOLID:
@@ -62,6 +59,15 @@ Los siguientes objetivos técnicos garantizan que la arquitectura sea robusta, e
 8. Resiliencia Operativa: Establecer mecanismos de recuperación y seguimiento histórico mediante el patrón Command, encapsulando transacciones como objetos ejecutables y reversibles. Habilita el historial de movimientos, auditoría completa y la capacidad de deshacer/rehacer operaciones sin pérdida de integridad.
 
 ## Módulos Clave y Funcionalidades Financieras
+El Sistema Bancario UTS integra funcionalidades críticas que reflejan operaciones reales del sector financiero, con un enfoque riguroso en la precisión, la seguridad y el cumplimiento normativo. A continuación, se detallan las capacidades centrales del sistema:
+Aquí el análisis: el texto dice **14 patrones** en "Implementación de Patrones de Diseño" (objetivo 6 de la tabla original) y la tabla de módulos no menciona los 3 patrones nuevos (Memento, Chain of Responsibility, Template Method). Los cambios necesarios son mínimos:
+
+1. En el objetivo 6 de la tabla anterior: "catorce" → "diecisiete"
+2. En la tabla de módulos: agregar tres filas nuevas para los patrones faltantes
+
+---
+
+## Módulos Clave y Funcionalidades Financieras
 
 El **Sistema Bancario UTS** integra funcionalidades críticas que reflejan operaciones reales del sector financiero, con un enfoque riguroso en la precisión, la seguridad y el cumplimiento normativo. A continuación, se detallan las capacidades centrales del sistema:
 
@@ -73,6 +79,9 @@ El **Sistema Bancario UTS** integra funcionalidades críticas que reflejan opera
 | **Verificación KYC** | Validación obligatoria de identidad (**Know Your Customer**) como requisito previo e ineludible para la apertura de productos financieros. | **Arquitectura de Facade:** Centraliza la lógica de cumplimiento en el registro. |
 | **Cumplimiento AML** | Centralización de umbrales y políticas para la prevención del lavado de dinero (límites de $10,000 y ventanas de tiempo). | **Configuración Centralizada:** Gestión global de políticas de cumplimiento. |
 | **Construcción Atómica** | Creación segura de cuentas mediante una API fluida que garantiza la integridad de todos los datos antes de la instanciación. | **Patrón Builder:** Asegura objetos válidos y consistentes desde su origen. |
+| **Reversibilidad de Estados** | Cada cambio de estado de una cuenta genera automáticamente un snapshot previo, permitiendo restaurar cualquier punto del historial sin pérdida de información. | **Patrón Memento:** Preserva instantáneas del estado interno de la cuenta. |
+| **Validación Encadenada** | Las transacciones atraviesan cinco validaciones secuenciales y trazables antes de ejecutarse, con reporte detallado del eslabón que rechazó la operación. | **Patrón Chain of Responsibility:** Centraliza y ordena las reglas de validación. |
+| **Reportes Estructurados** | Generación de cuatro tipos de reportes bancarios (movimientos, préstamos, sucursal y usuario) bajo un flujo de proceso unificado y coherente. | **Patrón Template Method:** Define un esquema fijo de seis pasos reutilizable por cada tipo de reporte. |
 
 ### Capacidades Destacadas
 
@@ -131,7 +140,8 @@ Aunque el sistema es altamente robusto, se optó por no implementar formalmente 
 
 ## Resumen de Archivos y Responsabilidades
 
-La arquitectura del **Sistema Bancario UTS** se organiza en componentes especializados, cada uno con una responsabilidad clara y fundamentada en patrones de diseño.
+La arquitectura del Sistema Bancario UTS se organiza en componentes especializados, cada uno con una responsabilidad clara y fundamentada en patrones de diseño.
+## Resumen de Archivos y Responsabilidades
 
 | Archivo(s) | Patrón(es) Asociado(s) | Rol Principal en el Sistema |
 | :--- | :--- | :--- |
@@ -147,99 +157,177 @@ La arquitectura del **Sistema Bancario UTS** se organiza en componentes especial
 | `prestamo_strategy.py` | **Strategy** | Calculan intereses de préstamos mediante algoritmos fijos o variables. |
 | `command_transaccion.py` | **Command** | Encapsulan acciones reversibles para permitir el historial y el Undo/Redo. |
 | `estado_cuenta.py` | **State** | Gobiernan las reglas de negocio según la condición (Activa, Bloqueada) de la cuenta. |
+| `memento_cuenta.py` | **Memento** | Preservan snapshots del estado de cada cuenta para permitir su restauración histórica. |
+| `validacion_chain.py` | **Chain of Responsibility** | Encadenan cinco validaciones secuenciales y trazables antes de ejecutar una transacción. |
+| `reporte_template.py` | **Template Method** | Definen el flujo fijo de generación de reportes reutilizable por los cuatro tipos disponibles. |
 | `api.py` | **REST API** | Exponen las funcionalidades del core bancario mediante una interfaz HTTP moderna. |
 | `seed.py`, `seed_prestamos.py` | **Data Seed** | Precargan el sistema con usuarios y transacciones para demostraciones y pruebas. |
 
 ### Organización del Código
 El proyecto sigue una estructura donde la **Lógica de Dominio** (`cuenta.py`, `banco.py`) es agnóstica a la interfaz, mientras que las **Fachadas** y los **Producers** actúan como pegamento arquitectónico para mantener el sistema bajo el principio de **Bajo Acoplamiento y Alta Cohesión**.
 
-
 ---
 
 ## Conclusiones y Aprendizajes Arquitectónicos
 
-El **Sistema Bancario UTS** trasciende la implementación técnica para convertirse en una demostración de cómo los patrones de diseño son respuestas precisas a desafíos reales de la ingeniería de software. La aplicación estratégica de los **14 patrones de diseño** no fue una elección arbitraria, sino una necesidad arquitectónica para resolver problemas de acoplamiento, extensibilidad y seguridad que emergen en sistemas financieros críticos.
-
+El Sistema Bancario UTS trasciende la implementación técnica para convertirse en una demostración de cómo los patrones de diseño son respuestas precisas a desafíos reales de la ingeniería de software. La aplicación estratégica de los 17 patrones de diseño no fue una elección arbitraria, sino una necesidad arquitectónica para resolver problemas de acoplamiento, extensibilidad y seguridad que emergen en sistemas financieros críticos.
 A través de este desarrollo, se han consolidado aprendizajes fundamentales:
 
-*   **Sinergia de Patrones:** Se ha demostrado que los patrones no operan de forma aislada. La integración del **Builder** con el **Prototype** y el **Observer** permite que la creación de cuentas sea un proceso atómico, seguro y reactivo desde su origen, garantizando que el sistema sea robusto por diseño.
-*   **Respeto a los Principios SOLID:** La arquitectura basada en el **Bridge** y el **Decorator** permite cumplir rigurosamente con el principio de *Abierto/Cerrado* (OCP), facilitando la adición de nuevos canales y comportamientos transversales sin alterar la lógica de negocio ya probada.
-*   **Precisión y Cumplimiento:** La transición hacia tipos de datos de alta precisión (**Decimal**) y la centralización de políticas de cumplimiento (**AML/KYC**) mediante **Singletons** y **Fachadas** eleva el proyecto de una simulación académica a una plataforma con estándares de nivel profesional.
+Sinergia de Patrones: Se ha demostrado que los patrones no operan de forma aislada. La integración del Builder con el Prototype y el Observer permite que la creación de cuentas sea un proceso atómico, seguro y reactivo desde su origen, garantizando que el sistema sea robusto por diseño.
+Respeto a los Principios SOLID: La arquitectura basada en el Bridge y el Decorator permite cumplir rigurosamente con el principio de Abierto/Cerrado (OCP), facilitando la adición de nuevos canales y comportamientos transversales sin alterar la lógica de negocio ya probada.
+Precisión y Cumplimiento: La transición hacia tipos de datos de alta precisión (Decimal) y la centralización de políticas de cumplimiento (AML/KYC) mediante Singletons y Fachadas eleva el proyecto de una simulación académica a una plataforma con estándares de nivel profesional.
+Trazabilidad y Reversibilidad: La incorporación del Memento y el Chain of Responsibility eleva la confiabilidad operativa del sistema: cada cambio de estado queda preservado y es restaurable, mientras que cada transacción atraviesa una cadena de validaciones ordenada, trazable y ampliable sin modificar código existente.
+Estandarización de Procesos: El Template Method demuestra que la coherencia estructural no riñe con la flexibilidad. Definir un flujo fijo de seis pasos para la generación de reportes garantiza que cualquier nuevo tipo de reporte herede automáticamente las garantías del proceso sin duplicar lógica.
 
-En conclusión, este proyecto evidencia que una arquitectura bien cimentada no es un paso previo al desarrollo, sino su columna vertebral. Cuando los patrones se integran con coherencia, el software deja de ser una colección de archivos y se convierte en un ecosistema escalable donde **extender la funcionalidad es una consecuencia natural de su estructura, no un riesgo operativo**. Los cimientos están puestos; el futuro del sistema es el crecimiento continuo.
-
+En conclusión, este proyecto evidencia que una arquitectura bien cimentada no es un paso previo al desarrollo, sino su columna vertebral. Cuando los patrones se integran con coherencia, el software deja de ser una colección de archivos y se convierte en un ecosistema escalable donde extender la funcionalidad es una consecuencia natural de su estructura, no un riesgo operativo. Los cimientos están puestos; el futuro del sistema es el crecimiento continuo.
 
 ---
 
 classDiagram
     direction TB
 
-    %% ==================== SINGLETONS ====================
-    class ConfigBanco { <<Singleton>> +get_instancia() }
     class Logger { <<Singleton>> +log() }
+    class ConfigBanco { <<Singleton>> +get_instancia() }
     class DetectorFraude { <<Singleton>> +evaluar() }
+    class SucursalesManager { <<Singleton>> +get_instancia() }
+    class GestorMementos { <<Singleton>> +guardar_estado() +restaurar() }
 
-    %% ==================== CREACIONALES ====================
     class CuentaBuilder { +build() +clone_desde() }
-    class Cuenta { +depositar() +retirar() +clone() }
+    class CuentaPrototypeRegistry { +registrar() +get() +clonar() }
     class OperacionFactory { <<Abstract>> +crear_operacion() }
+    class AbstractCanalFactory { <<Abstract>> +crear_validador() +crear_limite() }
 
-    %% ==================== ESTRUCTURALES ====================
     class OperacionBancaria { <<Abstract>> -_canal: CanalBancario +ejecutar() }
-    class CanalBancario { <<Interface>> +validar() +notificar() }
-    class OperacionDecorator { <<Abstract>> -_operacion: Operacion }
-    class ComponenteBancario { <<Interface>> +get_saldo_total() }
-    class NotificadorAdapterProducer { +get_adapter() }
+    class CanalBancario { <<Interface>> +validar() +notificar() +get_limite() }
+    class NotificadorAdapter { <<Interface>> +notificar() }
+    class OperacionDecorator { <<Abstract>> -_operacion: Operacion +ejecutar() }
+    class ComponenteBancario { <<Interface>> +get_saldo_total() +listar() }
+    class OperacionFacade { +depositar() +retirar() +transferir() }
+    class UsuarioFacade { +registrar_usuario() +crear_cuenta() }
 
-    %% ==================== COMPORTAMIENTO (NUEVOS) ====================
+    class Cuenta { +depositar() +retirar() +transferir() +clone() }
+    class Banco { +agregar_usuario() +buscar_cuenta() }
+    class Sucursal { +agregar_cuenta() +get_saldo_total() }
+
     class ObservadorCuenta { <<Interface>> +update() }
     class ObservadorFraude
     class ObservadorSaldoCritico
-    class EstrategiaInteres { <<Interface>> +calcular() }
-    class Prestamo { -_estrategia: EstrategiaInteres }
+    class ObservadorLogMovimiento
+    class EstadoCuenta { <<Interface>> +puede_depositar() +puede_retirar() }
+    class EstadoActiva
+    class EstadoBloqueada
+    class EstadoSuspendida
+    class EstadoCerrada
     class ComandoBancario { <<Interface>> +ejecutar() +deshacer() }
-    class EstadoCuenta { <<Interface>> +depositar() +retirar() }
+    class ComandoDeposito
+    class ComandoRetiro
+    class ComandoTransferencia
+    class HistorialComandos { <<Invoker>> +ejecutar() +deshacer() +reejecutar() }
+    class EstrategiaInteres { <<Interface>> +calcular_cuota() +calcular_total_intereses() }
+    class InteresEstrategiaFijo
+    class InteresEstrategiaVariable
+    class Prestamo { -_estrategia: EstrategiaInteres +registrar_pago() }
 
-    %% ==================== RELACIONES Y PATRONES ====================
-    
-    %% Bridge
-    OperacionBancaria "1" o-- "1" CanalBancario : "Bridge"
-    
-    %% Observer
-    Cuenta "1" o-- "0..*" ObservadorCuenta : "Sujeto Observer"
-    ObservadorCuenta <|-- ObservadorFraude
-    ObservadorCuenta <|-- ObservadorSaldoCritico
-    
-    %% Strategy
-    Prestamo "1" o-- "1" EstrategiaInteres : "Strategy"
-    
-    %% State
-    Cuenta "1" o-- "1" EstadoCuenta : "State"
-    
-    %% Composite
+    class MementoEstadoCuenta { +get_estado() +get_fecha() }
+    class ValidacionHandler { <<Abstract>> +manejar() +set_siguiente() }
+    class CadenaValidacionFactory { +crear_cadena() }
+    class GeneradorReporte { <<Abstract>> +generar() +recopilar() +filtrar() +formatear() }
+    class ReporteMovimientos
+    class ReportePrestamos
+    class ReporteSucursal
+    class ReporteUsuario
+
+    ConfigBanco ..> DetectorFraude : configura
+    ConfigBanco ..> SucursalesManager : configura
+    Logger <.. Cuenta : usa
+    Logger <.. OperacionBancaria : usa
+    GestorMementos ..> MementoEstadoCuenta : gestiona
+
+    OperacionBancaria "1" o-- "1" CanalBancario : Bridge
+    OperacionBancaria <|-- Deposito
+    OperacionBancaria <|-- Retiro
+    OperacionBancaria <|-- Transferencia
+
+    AbstractCanalFactory ..> CanalBancario : produce
+
+    OperacionFactory ..> Deposito : crea
+    OperacionFactory ..> Retiro : crea
+    OperacionFactory ..> Transferencia : crea
+
+    CuentaBuilder ..> Cuenta : construye
+    CuentaBuilder ..> CuentaPrototypeRegistry : consulta
+    CuentaPrototypeRegistry ..> Cuenta : clona
+
+    NotificadorAdapter <|-- SMSAdapter
+    NotificadorAdapter <|-- EmailAdapter
+    NotificadorAdapter <|-- VoucherAdapter
+    CanalBancario ..> NotificadorAdapter : delega notificacion
+
+    OperacionDecorator o-- OperacionFactory : decora
+    OperacionDecorator <|-- LogTiempoDecorator
+    OperacionDecorator <|-- AuditoriaDecorator
+    OperacionDecorator <|-- ReintentoDecorator
+
     ComponenteBancario <|-- Banco
     ComponenteBancario <|-- Sucursal
     ComponenteBancario <|-- Cuenta
-    
-    %% Decorator
-    OperacionDecorator o-- "decora" OperacionBancaria : "Decorator"
-    
-    %% Builder & Prototype
-    CuentaBuilder ..> Cuenta : "construye / clona"
-    
-    %% Command
-    ComandoBancario <.. HistorialComandos : "invoker"
+    Banco o-- Sucursal : contiene
+    Sucursal o-- Cuenta : contiene
 
-    %% Notas de Arquitectura
-    note for OperacionBancaria "Bridge: Eje central del sistema"
-    note for Cuenta "Sujeto de Observer y Contexto de State"
-    note for ComandoBancario "Permite Undo/Redo de transacciones"
+    OperacionFacade ..> OperacionBancaria : orquesta
+    UsuarioFacade ..> CuentaBuilder : usa
+    OperacionFacade ..> Cuenta : busca
 
+    Cuenta "1" o-- "0..*" ObservadorCuenta : notifica
+    ObservadorCuenta <|-- ObservadorFraude
+    ObservadorCuenta <|-- ObservadorSaldoCritico
+    ObservadorCuenta <|-- ObservadorLogMovimiento
+    ObservadorFraude ..> DetectorFraude : delega
+
+    Cuenta "1" o-- "1" EstadoCuenta : delega
+    EstadoCuenta <|-- EstadoActiva
+    EstadoCuenta <|-- EstadoBloqueada
+    EstadoCuenta <|-- EstadoSuspendida
+    EstadoCuenta <|-- EstadoCerrada
+
+    ComandoBancario <|-- ComandoDeposito
+    ComandoBancario <|-- ComandoRetiro
+    ComandoBancario <|-- ComandoTransferencia
+    HistorialComandos o-- ComandoBancario : gestiona pila
+    ComandoDeposito ..> Cuenta : receiver
+    ComandoRetiro ..> Cuenta : receiver
+    ComandoTransferencia ..> Cuenta : receiver
+
+    Prestamo "1" o-- "1" EstrategiaInteres : delega calculo
+    EstrategiaInteres <|-- InteresEstrategiaFijo
+    EstrategiaInteres <|-- InteresEstrategiaVariable
+
+    Cuenta ..> MementoEstadoCuenta : crea snapshot
+    GestorMementos o-- MementoEstadoCuenta : almacena
+
+    ValidacionHandler <|-- ValidadorEstado
+    ValidacionHandler <|-- ValidadorSaldo
+    ValidacionHandler <|-- ValidadorLimiteCanal
+    ValidacionHandler <|-- ValidadorFrecuencia
+    ValidacionHandler <|-- ValidadorDestino
+    CadenaValidacionFactory ..> ValidacionHandler : encadena
+    ValidacionHandler ..> Cuenta : valida
+
+    GeneradorReporte <|-- ReporteMovimientos
+    GeneradorReporte <|-- ReportePrestamos
+    GeneradorReporte <|-- ReporteSucursal
+    GeneradorReporte <|-- ReporteUsuario
+    GeneradorReporte ..> Banco : consulta datos
+
+    note for OperacionBancaria "Bridge: eje central del sistema"
+    note for Cuenta "Observer + State + Composite + Memento"
+    note for HistorialComandos "Invoker: pila undo/redo"
+    note for GeneradorReporte "6 pasos: recopilar-filtrar-calcular-formatear"
+    note for CadenaValidacionFactory "5 eslabones: estado-saldo-canal-frecuencia-destino"
 
 ---
 
-<img width="8192" height="1964" alt="Diagrama" src="https://github.com/user-attachments/assets/f34071e5-3c97-4c88-8572-1effe11c0001" />
-
+<img width="8192" height="1900" alt="Diagrama" src="https://github.com/user-attachments/assets/75cd7ab3-99de-43ae-9fbf-a5897929ad62" />
 
 ---
   -----------------------------
