@@ -2126,6 +2126,11 @@
   }
 
   // ── API call ──────────────────────────────────────────────────────────────
+  // Si el backend exige API_KEY (variable de entorno API_KEY en api.py),
+  // configúrala una vez en este navegador desde la consola con:
+  //   localStorage.setItem('bancouts_api_key', 'tu-clave-aqui')
+  const API_KEY = localStorage.getItem('bancouts_api_key') || '';
+
   async function api(method, path, body, btn) {
     if (btn) setLoading(btn, true);
     try {
@@ -2133,8 +2138,13 @@
         method,
         headers: { 'Content-Type': 'application/json' }
       };
+      if (API_KEY) opts.headers['X-API-Key'] = API_KEY;
       if (body) opts.body = JSON.stringify(body);
       const r = await fetch(API + path, opts);
+      if (r.status === 401) {
+        toast('No autorizado: falta o es incorrecta la API_KEY configurada en este navegador.', 'error');
+        return null;
+      }
       return await r.json();
     } catch (e) {
       toast('No se pudo conectar con el servidor. Asegúrese de que api.py esté corriendo en puerto 5000.', 'error');

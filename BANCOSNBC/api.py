@@ -18,6 +18,11 @@ from memento_cuenta import GestorMementos
 from validacion_chain import CadenaValidacionFactory
 from reporte_template import ReporteProducer
 
+# ── FASE 2 — Persistencia (Supabase) ──────────────────────────────────────────
+import repositorio
+import estado_inicial
+from config_banco import ConfigBanco
+
 # =============================================================================
 # FASE 1 — CONFIGURACIÓN SEGURA (variables de entorno)
 #
@@ -68,18 +73,39 @@ usuario_facade = UsuarioFacade(banco)
 
 logger.log("¡Sistema Bancario Core iniciado vía API!")
 
-# ── SEED: datos de prueba precargados ─────────────────────────────────────────
-from seed import cargar_datos_prueba
+# ── FASE 2: bootstrap de estado (reconstruye desde Supabase o siembra) ────────
 from estado_cuenta import EstadoCuentaProducer
-from seed_prestamos import cargar_prestamos_seed
 from command_transaccion import (
     ComandoDeposito, ComandoRetiro, ComandoTransferencia, HistorialComandos
 )
 from prestamo_strategy import (
     EstrategiaInteresProducer, GestorPrestamos, Prestamo
 )
-cargar_datos_prueba(banco)
-cargar_prestamos_seed(banco)
+
+estado_inicial.inicializar_estado(banco, usuario_facade)
+
+# Mapa {nombre_sucursal: id_supabase}, disponible aunque la persistencia
+# esté desactivada (queda {} y las llamadas a repositorio.* son no-ops).
+SUCURSAL_IDS = repositorio.sincronizar_sucursales(ConfigBanco.get_instancia().get_sucursales())
+
+
+def _sucursal_id_de(cuenta):
+    """Busca el id de Supabase de la sucursal que contiene esta cuenta."""
+    sucursal = next((s for s in banco.sucursales if cuenta in s._cuentas), None)
+    return SUCURSAL_IDS.get(sucursal.nombre) if sucursal else None
+
+
+def _persistir_saldos_de_comando(datos: dict) -> None:
+    """
+    Sincroniza en Supabase el/los saldo(s) que un undo/redo del patrón
+    Command modificó. 'datos' viene de ComandoDeposito/Retiro (una sola
+    cuenta) o de ComandoTransferencia (origen + destino).
+    """
+    if "cuenta" in datos:
+        repositorio.actualizar_cuenta(datos["cuenta"], datos["saldo_nuevo"])
+    if "origen" in datos:
+        repositorio.actualizar_cuenta(datos["origen"], datos["saldo_origen"])
+        repositorio.actualizar_cuenta(datos["destino"], datos["saldo_destino"])
 
 
 # =============================================================================
@@ -111,6 +137,8 @@ def registrar_usuario():
     if resultado is None:
         return err(f"Ya existe un usuario con documento {documento}.")
 
+    repositorio.guardar_usuario(resultado)
+
     return ok(
         {"nombre": resultado.nombre, "documento": resultado.documento,
          "celular": resultado.celular, "correo": resultado.correo,
@@ -135,6 +163,7 @@ def verificar_kyc():
         return err(f"No se encontró usuario con documento {documento}.")
 
     usuario = banco.buscar_usuario_por_documento(documento)
+    repositorio.guardar_usuario(usuario)
     return ok(
         {"nombre": usuario.nombre, "documento": usuario.documento,
          "kyc": usuario.verificado_kyc},
@@ -160,6 +189,8 @@ def crear_cuenta():
     cuenta = usuario_facade.crear_cuenta(documento, numero, tipo, saldo_inicial, indice_sucursal)
     if cuenta is None:
         return err("No se pudo crear la cuenta. Verifique KYC, duplicados y datos.")
+
+    repositorio.guardar_cuenta(cuenta, documento, _sucursal_id_de(cuenta))
 
     return ok(
         {"numero": cuenta.numero, "tipo": cuenta.tipo, "saldo": cuenta.saldo},
@@ -191,6 +222,9 @@ def depositar():
     if not resultado["ok"]:
         return err(resultado["mensaje"])
 
+    repositorio.actualizar_cuenta(numero, cuenta.saldo)
+    repositorio.guardar_transaccion("deposito", monto, canal, cuenta_origen=numero)
+
     return ok(
         {"numero": numero, "saldo_actual": cuenta.saldo,
          "estado_invoker": HistorialComandos.get_instancia().get_estado()},
@@ -221,6 +255,9 @@ def retirar():
     resultado = HistorialComandos.get_instancia().ejecutar(cmd)
     if not resultado["ok"]:
         return err(resultado["mensaje"])
+
+    repositorio.actualizar_cuenta(numero, cuenta.saldo)
+    repositorio.guardar_transaccion("retiro", monto, canal, cuenta_origen=numero)
 
     return ok(
         {"numero": numero, "saldo_actual": cuenta.saldo,
@@ -256,6 +293,12 @@ def transferir():
     resultado = HistorialComandos.get_instancia().ejecutar(cmd)
     if not resultado["ok"]:
         return err(resultado["mensaje"])
+
+    repositorio.actualizar_cuenta(origen, c_orig.saldo)
+    repositorio.actualizar_cuenta(destino, c_dest.saldo)
+    repositorio.guardar_transaccion(
+        "transferencia", monto, canal, cuenta_origen=origen, cuenta_destino=destino
+    )
 
     return ok(
         {
@@ -526,6 +569,8 @@ def eliminar_usuario():
     if not resultado:
         return err("No se pudo eliminar el usuario.")
 
+    repositorio.eliminar_usuario(documento)
+
     return ok(info, f"Usuario '{info['nombre']}' eliminado correctamente.")
 
 
@@ -688,6 +733,8 @@ def cambiar_estado_cuenta():
     except ValueError as e:
         return err(str(e))
 
+    repositorio.actualizar_cuenta(numero, cuenta.saldo, cuenta.get_estado().get_nombre())
+
     return ok(
         {
             "numero":            numero,
@@ -785,6 +832,10 @@ def crear_prestamo():
 
     GestorPrestamos.get_instancia().agregar(prestamo)
 
+    repositorio.actualizar_cuenta(num_cuenta, cuenta.saldo)
+    repositorio.guardar_transaccion("deposito", monto, "web", cuenta_origen=num_cuenta)
+    repositorio.guardar_prestamo(prestamo)
+
     return ok(
         prestamo.to_dict(),
         f"Préstamo {prestamo.id} creado. ${monto:,.2f} acreditados en cuenta {num_cuenta}."
@@ -841,6 +892,7 @@ def pagar_cuota():
         resultado = prestamo.registrar_pago(0.0)
         if not resultado["ok"]:
             return err(resultado["mensaje"])
+        repositorio.actualizar_prestamo(prestamo)
         return ok(
             {
                 "prestamo_id":       prestamo_id,
@@ -875,6 +927,10 @@ def pagar_cuota():
     if not resultado["ok"]:
         cuenta.depositar(monto_real, "web")
         return err(resultado["mensaje"])
+
+    repositorio.actualizar_cuenta(prestamo.numero_cuenta, cuenta.saldo)
+    repositorio.guardar_transaccion("retiro", monto_real, "web", cuenta_origen=prestamo.numero_cuenta)
+    repositorio.actualizar_prestamo(prestamo)
 
     abonos_aplicados = resultado["pago"].get("abonos_aplicados", 0)
     msg = (
@@ -951,6 +1007,10 @@ def abonar_prestamo():
         cuenta.depositar(monto, "web")
         return err(resultado["mensaje"])
 
+    repositorio.actualizar_cuenta(prestamo.numero_cuenta, cuenta.saldo)
+    repositorio.guardar_transaccion("retiro", monto, "web", cuenta_origen=prestamo.numero_cuenta)
+    repositorio.actualizar_prestamo(prestamo)
+
     saldo_pendiente = round(prestamo.total_a_pagar - prestamo.total_pagado, 2)
 
     return ok(
@@ -1010,6 +1070,7 @@ def command_deshacer():
     resultado = invoker.deshacer()
     if not resultado["ok"]:
         return err(resultado["mensaje"])
+    _persistir_saldos_de_comando(resultado["datos"])
     return ok(
         {**resultado["datos"], "estado_invoker": invoker.get_estado()},
         resultado["mensaje"]
@@ -1024,6 +1085,7 @@ def command_reejecutar():
     resultado = invoker.reejecutar()
     if not resultado["ok"]:
         return err(resultado["mensaje"])
+    _persistir_saldos_de_comando(resultado["datos"])
     return ok(
         {**resultado["datos"], "estado_invoker": invoker.get_estado()},
         resultado["mensaje"]
@@ -1080,6 +1142,8 @@ def restaurar_estado_cuenta():
 
     if not resultado["ok"]:
         return err(resultado["mensaje"])
+
+    repositorio.actualizar_cuenta(numero, cuenta.saldo, cuenta.get_estado().get_nombre())
 
     return ok(
         {

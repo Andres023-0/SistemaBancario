@@ -28,8 +28,9 @@ logger.log("¡Bienvenido al Sistema Bancario Core!")
 sucursales = SucursalesManager.get_instancia().sucursales
 logger.log(f"Sucursales disponibles: {[s.nombre for s in sucursales]}")
 
-from seed import cargar_datos_prueba
-cargar_datos_prueba(banco)
+# ── FASE 2: bootstrap de estado (reconstruye desde Supabase o siembra) ────────
+import estado_inicial
+estado_inicial.inicializar_estado(banco, usuario_facade)
 
 
 # =============================================================================
