@@ -1,0 +1,3880 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Banco UTS — Sistema Bancario Core</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --negro:    #0a0a0a;
+    --negro2:   #111111;
+    --negro3:   #1a1a1a;
+    --negro4:   #222222;
+    --negro5:   #2e2e2e;
+    --dorado:   #d4a017;
+    --dorado2:  #f0c040;
+    --dorado3:  #ffd966;
+    --dorado-d: #8a6500;
+    --blanco:   #f5f0e8;
+    --gris:     #888888;
+    --gris2:    #555555;
+    --verde:    #2a7a2a;
+    --verde-c:  #4caf50;
+    --rojo:     #c0392b;
+    --rojo-c:   #e74c3c;
+    --naranja:  #e67e22;
+    --azul:     #2980b9;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--negro);
+    color: var(--blanco);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── FONDO TEXTURIZADO ─────────────────────────────────────────────── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(212,160,23,0.03) 40px, rgba(212,160,23,0.03) 41px),
+      repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(212,160,23,0.03) 40px, rgba(212,160,23,0.03) 41px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── HEADER ────────────────────────────────────────────────────────── */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,10,10,0.97);
+    border-bottom: 2px solid var(--dorado);
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 72px;
+    backdrop-filter: blur(12px);
+  }
+
+  .logo {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .logo-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.2rem;
+    color: var(--dorado);
+    letter-spacing: 4px;
+    line-height: 1;
+  }
+
+  .logo-sub {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--gris);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .header-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--gris);
+  }
+
+  .btn-salir {
+    padding: 7px 16px;
+    background: transparent;
+    border: 1px solid var(--negro5);
+    border-radius: 2px;
+    color: var(--gris);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-left: 16px;
+  }
+  .btn-salir:hover { border-color: var(--rojo-c); color: var(--rojo-c); }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--verde-c);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* ── LAYOUT PRINCIPAL ──────────────────────────────────────────────── */
+  main {
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* ── SECCIÓN TITULO ────────────────────────────────────────────────── */
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 4px;
+    color: var(--dorado);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 3px;
+    color: var(--blanco);
+    margin-bottom: 24px;
+  }
+
+  /* ── BLOQUE / CARD ─────────────────────────────────────────────────── */
+  .bloque {
+    background: var(--negro2);
+    border: 1px solid var(--negro5);
+    border-top: 3px solid var(--dorado);
+    border-radius: 2px;
+    padding: 32px;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .bloque::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, var(--dorado), transparent);
+  }
+
+  .bloque-corner {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--dorado-d);
+    letter-spacing: 2px;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .bloque:nth-child(2) { animation-delay: 0.1s; }
+  .bloque:nth-child(3) { animation-delay: 0.2s; }
+  .bloque:nth-child(4) { animation-delay: 0.3s; }
+  .bloque:nth-child(5) { animation-delay: 0.4s; }
+  .bloque:nth-child(6) { animation-delay: 0.5s; }
+  .bloque:nth-child(7) { animation-delay: 0.6s; }
+  .bloque:nth-child(8) { animation-delay: 0.7s; }
+
+  /* ── PESTAÑAS SUCURSAL ─────────────────────────────────────────────── */
+  .suc-tab {
+    padding: 10px 20px;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--gris);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .suc-tab:hover { color: var(--blanco); }
+  .suc-tab.activo {
+    color: var(--dorado);
+    border-bottom-color: var(--dorado);
+  }
+  .suc-panel { display: none; }
+  .suc-panel.activo { display: block; }
+
+  /* ── KPI CARDS ─────────────────────────────────────────────────────── */
+  .kpi-card {
+    background: var(--negro3);
+    border: 1px solid var(--negro5);
+    border-top: 2px solid var(--dorado);
+    border-radius: 2px;
+    padding: 20px 24px;
+    text-align: center;
+  }
+  .kpi-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.2rem;
+    color: var(--dorado2);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .kpi-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--gris);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .kpi-sub {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--verde-c);
+    margin-top: 4px;
+  }
+
+
+  .bloque-grid {
+    display: grid;
+    gap: 24px;
+  }
+  .bloque-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .bloque-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+
+  .sub-card {
+    background: var(--negro3);
+    border: 1px solid var(--negro5);
+    border-radius: 2px;
+    padding: 24px;
+    position: relative;
+  }
+
+  .sub-card-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    color: var(--dorado2);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--negro5);
+  }
+
+  .sub-card-num {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    color: var(--negro4);
+    line-height: 1;
+  }
+
+  /* ── FORMULARIOS ───────────────────────────────────────────────────── */
+  .form-group {
+    margin-bottom: 14px;
+  }
+
+  label {
+    display: block;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 1.5px;
+    color: var(--gris);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  input, select {
+    width: 100%;
+    background: var(--negro4);
+    border: 1px solid var(--negro5);
+    border-bottom: 2px solid var(--negro5);
+    color: var(--blanco);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    padding: 10px 14px;
+    border-radius: 2px;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    -webkit-appearance: none;
+  }
+
+  input:focus, select:focus {
+    border-color: var(--dorado);
+    border-bottom-color: var(--dorado);
+    background: var(--negro3);
+  }
+
+  select option { background: var(--negro3); }
+
+  /* ── BOTONES ───────────────────────────────────────────────────────── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    margin-top: 4px;
+  }
+
+  .btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.05);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .btn:hover::after { opacity: 1; }
+  .btn:active { transform: scale(0.98); }
+
+  .btn-dorado {
+    background: var(--dorado);
+    color: var(--negro);
+    font-weight: 700;
+  }
+  .btn-dorado:hover { background: var(--dorado2); }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--dorado);
+    border: 1px solid var(--dorado);
+  }
+  .btn-outline:hover { background: rgba(212,160,23,0.1); }
+
+  .btn-rojo {
+    background: var(--rojo);
+    color: var(--blanco);
+  }
+  .btn-rojo:hover { background: var(--rojo-c); }
+
+  .btn-gris {
+    background: var(--negro4);
+    color: var(--gris);
+    border: 1px solid var(--negro5);
+  }
+  .btn-gris:hover { background: var(--negro5); color: var(--blanco); }
+
+  .btn-sm {
+    padding: 8px 16px;
+    font-size: 0.65rem;
+    width: auto;
+  }
+
+  /* ── NOTIFICACIONES TOAST ─────────────────────────────────────────── */
+  #toast-container {
+    position: fixed;
+    top: 88px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 380px;
+  }
+
+  .toast {
+    background: var(--negro2);
+    border-left: 4px solid var(--dorado);
+    border: 1px solid var(--negro5);
+    border-left: 4px solid var(--dorado);
+    border-radius: 2px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    animation: slideIn 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+
+  .toast.exito { border-left-color: var(--verde-c); }
+  .toast.error { border-left-color: var(--rojo-c); }
+  .toast.info  { border-left-color: var(--azul); }
+
+  .toast-icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .toast-body { flex: 1; }
+
+  .toast-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    color: var(--gris);
+  }
+
+  .toast-msg {
+    font-size: 0.85rem;
+    color: var(--blanco);
+    line-height: 1.4;
+  }
+
+  .toast-close {
+    background: none;
+    border: none;
+    color: var(--gris);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0;
+    flex-shrink: 0;
+    transition: color 0.2s;
+  }
+  .toast-close:hover { color: var(--blanco); }
+
+  .toast-bar {
+    position: absolute;
+    bottom: 0; left: 0;
+    height: 2px;
+    background: currentColor;
+    animation: shrink 4s linear forwards;
+  }
+
+  .toast.exito .toast-bar { color: var(--verde-c); }
+  .toast.error .toast-bar { color: var(--rojo-c); }
+  .toast.info  .toast-bar { color: var(--azul); }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(40px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes shrink {
+    from { width: 100%; }
+    to   { width: 0%; }
+  }
+
+  /* ── TABLA RESULTADO ──────────────────────────────────────────────── */
+  .resultado-box {
+    background: var(--negro3);
+    border: 1px solid var(--negro5);
+    border-radius: 2px;
+    padding: 16px;
+    margin-top: 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    display: none;
+    animation: fadeUp 0.3s ease;
+  }
+
+  .resultado-box.visible { display: block; }
+
+  .resultado-fila {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--negro4);
+    gap: 12px;
+  }
+
+  .resultado-fila:last-child { border-bottom: none; }
+
+  .resultado-key {
+    color: var(--gris);
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+
+  .resultado-val {
+    color: var(--blanco);
+    text-align: right;
+    word-break: break-all;
+  }
+
+  .resultado-val.verde { color: var(--verde-c); }
+  .resultado-val.rojo  { color: var(--rojo-c); }
+  .resultado-val.dorado { color: var(--dorado2); }
+
+  /* ── TABLA COMPLEJA ──────────────────────────────────────────────── */
+  .tabla-scroll {
+    overflow-x: auto;
+    margin-top: 16px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+  }
+
+  th {
+    background: var(--negro4);
+    color: var(--dorado);
+    padding: 10px 14px;
+    text-align: left;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    border-bottom: 2px solid var(--dorado-d);
+    font-size: 0.62rem;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--negro4);
+    color: var(--blanco);
+    vertical-align: top;
+  }
+
+  tr:hover td { background: rgba(212,160,23,0.04); }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 2px;
+    font-size: 0.6rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .badge-verde  { background: rgba(76,175,80,0.15);  color: var(--verde-c); }
+  .badge-rojo   { background: rgba(231,76,60,0.15);  color: var(--rojo-c); }
+  .badge-dorado { background: rgba(212,160,23,0.15); color: var(--dorado2); }
+  .badge-gris   { background: rgba(136,136,136,0.15); color: var(--gris); }
+
+  /* ── DECORADORES CONFIG ──────────────────────────────────────────── */
+  .dec-option {
+    background: var(--negro4);
+    border: 1px solid var(--negro5);
+    border-radius: 2px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .dec-option:hover { border-color: var(--dorado); background: rgba(212,160,23,0.05); }
+  .dec-option.activo { border-color: var(--dorado); background: rgba(212,160,23,0.1); }
+
+  .dec-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    color: var(--dorado);
+    line-height: 1;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .dec-info { flex: 1; }
+  .dec-name { font-family: 'Space Mono', monospace; font-size: 0.72rem; color: var(--blanco); margin-bottom: 2px; }
+  .dec-desc { font-size: 0.75rem; color: var(--gris); }
+
+  /* ── LOGS ──────────────────────────────────────────────────────────── */
+  .log-container {
+    background: var(--negro);
+    border: 1px solid var(--negro4);
+    border-radius: 2px;
+    height: 400px;
+    overflow-y: auto;
+    padding: 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    line-height: 1.8;
+  }
+
+  .log-line { color: var(--gris); word-break: break-all; }
+  .log-line.INFO    { color: #aaa; }
+  .log-line.SUCCESS { color: var(--verde-c); }
+  .log-line.WARNING { color: var(--naranja); }
+  .log-line.ERROR   { color: var(--rojo-c); }
+
+  /* ── CHIPS DE DECORADORES ACTIVOS ──────────────────────────────────── */
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .chip {
+    background: rgba(212,160,23,0.12);
+    border: 1px solid var(--dorado-d);
+    color: var(--dorado2);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 1px;
+    padding: 4px 10px;
+    border-radius: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ── SPINNER ────────────────────────────────────────────────────────── */
+  .btn.loading::before {
+    content: '';
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .btn.loading { pointer-events: none; opacity: 0.7; }
+
+  /* ── SEPARADOR ──────────────────────────────────────────────────────── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--negro4);
+    margin: 20px 0;
+  }
+
+  /* ── RESPONSIVE ─────────────────────────────────────────────────────── */
+  @media (max-width: 900px) {
+    .bloque-grid.cols-3 { grid-template-columns: 1fr; }
+    .bloque-grid.cols-2 { grid-template-columns: 1fr; }
+    header { padding: 0 16px; }
+    main { padding: 20px 12px 60px; }
+    .bloque { padding: 20px 16px; }
+  }
+
+  /* ── STATE BADGES ──────────────────────────────────────────────────── */
+  .estado-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 2px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+  .estado-badge.verde   { background: rgba(42,122,42,0.2);  color: #4caf50; border: 1px solid #2a7a2a; }
+  .estado-badge.rojo    { background: rgba(192,57,43,0.2);  color: #e74c3c; border: 1px solid #c0392b; }
+  .estado-badge.naranja { background: rgba(230,126,34,0.2); color: #e67e22; border: 1px solid #d35400; }
+  .estado-badge.gris    { background: rgba(100,100,100,0.2);color: #888;    border: 1px solid #555; }
+
+  .state-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+    margin-top: 16px;
+  }
+  .state-card {
+    background: var(--negro3);
+    border: 1px solid var(--negro5);
+    border-radius: 2px;
+    padding: 16px;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+  .state-card:hover { border-color: var(--dorado); }
+  .state-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+  }
+  .state-card-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 1rem;
+    color: var(--dorado);
+    font-weight: 700;
+  }
+  .state-card-user {
+    font-size: 0.75rem;
+    color: var(--gris);
+    margin-bottom: 4px;
+  }
+  .state-card-tipo {
+    font-size: 0.7rem;
+    color: var(--gris2);
+    font-family: 'Space Mono', monospace;
+  }
+  .state-card-saldo {
+    font-size: 0.85rem;
+    color: var(--blanco);
+    margin-top: 8px;
+    font-family: 'Space Mono', monospace;
+  }
+  .state-permisos {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .perm-chip {
+    font-size: 0.6rem;
+    font-family: 'Space Mono', monospace;
+    padding: 2px 7px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+  }
+  .perm-ok  { background: rgba(42,122,42,0.25); color: #4caf50; }
+  .perm-no  { background: rgba(192,57,43,0.2);  color: #e74c3c; }
+
+  .state-filtros {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .filtro-btn {
+    padding: 6px 14px;
+    background: transparent;
+    border: 1px solid var(--negro5);
+    color: var(--gris);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+  }
+  .filtro-btn:hover, .filtro-btn.activo { border-color: var(--dorado); color: var(--dorado); }
+  .filtro-btn.activo { background: rgba(212,160,23,0.08); }
+
+
+  /* ── MÓDULO 07 PRÉSTAMOS ────────────────────────────────────────────── */
+  .prest-tipos { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+  .tipo-card {
+    border:1px solid var(--negro5); border-radius:2px; padding:14px;
+    cursor:pointer; transition:all .15s; background:var(--negro3);
+  }
+  .tipo-card:hover { border-color:var(--dorado); }
+  .tipo-card.sel   { border-color:var(--dorado); background:rgba(212,160,23,.07); box-shadow:0 0 0 1px var(--dorado); }
+  .tipo-card-tag   { font-family:'Space Mono',monospace; font-size:.58rem; letter-spacing:2px; color:var(--dorado); text-transform:uppercase; margin-bottom:4px; }
+  .tipo-card-name  { font-family:'Bebas Neue',sans-serif; font-size:1.1rem; letter-spacing:2px; color:var(--blanco); margin-bottom:4px; }
+  .tipo-card-desc  { font-size:.68rem; color:var(--gris); line-height:1.5; }
+
+  .simulador-box {
+    background:var(--negro3); border:1px solid var(--negro5); border-radius:2px;
+    padding:16px; margin-top:14px; font-family:'Space Mono',monospace; font-size:.7rem;
+    display:none;
+  }
+  .simulador-box.visible { display:block; }
+  .sim-fila { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--negro4); }
+  .sim-fila:last-child   { border-bottom:none; }
+  .sim-key  { color:var(--gris); font-size:.62rem; letter-spacing:1px; text-transform:uppercase; }
+  .sim-val  { color:var(--dorado2); }
+  .sim-val.grande { font-family:'Bebas Neue',sans-serif; font-size:1.3rem; color:var(--dorado3); }
+
+  /* tabla préstamos */
+  .prestamos-tabla { overflow-x:auto; margin-top:16px; }
+  .prestamos-tabla table { width:100%; border-collapse:collapse; font-family:'Space Mono',monospace; font-size:.63rem; }
+  .prestamos-tabla th { background:var(--negro4); color:var(--dorado); padding:8px 10px; text-align:left; border-bottom:2px solid var(--dorado-d); letter-spacing:1.5px; text-transform:uppercase; font-size:.58rem; white-space:nowrap; }
+  .prestamos-tabla td { padding:8px 10px; border-bottom:1px solid var(--negro4); color:var(--blanco); vertical-align:middle; }
+  .prestamos-tabla tr:hover td { background:rgba(212,160,23,.04); }
+
+  .badge-prest { display:inline-block; padding:2px 8px; border-radius:2px; font-size:.58rem; letter-spacing:1px; text-transform:uppercase; }
+  .badge-activo  { background:rgba(76,175,80,.15);  color:#4caf50; }
+  .badge-pagado  { background:rgba(212,160,23,.15); color:var(--dorado2); }
+  .badge-vencido { background:rgba(231,76,60,.15);  color:#e74c3c; }
+  .badge-fijo     { background:rgba(100,149,237,.15); color:#6495ed; }
+  .badge-variable { background:rgba(230,126,34,.15);  color:#e67e22; }
+
+  /* pagos */
+  .pago-historial { margin-top:12px; max-height:200px; overflow-y:auto; }
+  .pago-item { display:flex; justify-content:space-between; padding:7px 10px; border-bottom:1px solid var(--negro4); font-family:'Space Mono',monospace; font-size:.63rem; }
+  .pago-item:last-child { border-bottom:none; }
+
+
+  /* ── MÓDULO 05 COMMAND ─────────────────────────────────────────────── */
+  .cmd-historial-wrap { overflow-x:auto; margin-top:12px; }
+  .cmd-historial-wrap table { width:100%; border-collapse:collapse; font-family:'Space Mono',monospace; font-size:.62rem; }
+  .cmd-historial-wrap th { background:var(--negro4); color:var(--dorado); padding:8px 10px; text-align:left; border-bottom:2px solid var(--dorado-d); letter-spacing:1.5px; text-transform:uppercase; font-size:.58rem; white-space:nowrap; }
+  .cmd-historial-wrap td { padding:8px 10px; border-bottom:1px solid var(--negro4); color:var(--blanco); vertical-align:middle; }
+  .cmd-historial-wrap tr:hover td { background:rgba(212,160,23,.04); }
+
+  .cmd-stack-badge { display:inline-block; padding:2px 8px; border-radius:2px; font-family:'Space Mono',monospace; font-size:.58rem; letter-spacing:1px; text-transform:uppercase; }
+  .cmd-undo  { background:rgba(76,175,80,.15);  color:#4caf50; }
+  .cmd-redo  { background:rgba(100,149,237,.15); color:#6495ed; }
+
+  .ur-panel {
+    display:flex; justify-content:space-between; align-items:center;
+    flex-wrap:wrap; gap:14px; padding:18px 22px;
+    background:var(--negro3); border:1px solid var(--negro5);
+    border-left:3px solid var(--dorado); border-radius:2px; margin-bottom:20px;
+  }
+  .ur-item { font-family:'Space Mono',monospace; font-size:.65rem; }
+  .ur-label { color:var(--gris); font-size:.58rem; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:4px; }
+  .ur-val   { color:var(--blanco); }
+  .ur-val.act { color:var(--dorado2); }
+
+  /* ── MÓDULO MEMENTO ────────────────────────────────────────────────────── */
+  .mem-historial {
+    margin-top: 14px;
+    max-height: 220px;
+    overflow-y: auto;
+  }
+  .mem-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--negro4);
+    font-family: 'Space Mono', monospace;
+    font-size: .62rem;
+    gap: 10px;
+  }
+  .mem-item:last-child { border-bottom: none; }
+  .mem-arrow { color: var(--dorado2); font-size: .8rem; }
+  .mem-fecha { color: var(--gris2); font-size: .56rem; }
+  .snapshot-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(212,160,23,0.12);
+    border: 1px solid var(--dorado-d);
+    color: var(--dorado2);
+    font-family: 'Space Mono', monospace;
+    font-size: .62rem;
+    letter-spacing: 1px;
+    padding: 4px 10px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    margin-top: 10px;
+  }
+
+  /* ── MÓDULO CHAIN ──────────────────────────────────────────────────────── */
+  .chain-pasos {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .chain-paso {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--negro4);
+    border: 1px solid var(--negro5);
+    border-radius: 2px;
+    font-family: 'Space Mono', monospace;
+    font-size: .65rem;
+    transition: border-color 0.2s;
+  }
+  .chain-paso.ok   { border-left: 3px solid var(--verde-c); }
+  .chain-paso.fail { border-left: 3px solid var(--rojo-c); background: rgba(192,57,43,0.08); }
+  .chain-paso.pending { border-left: 3px solid var(--negro5); opacity: 0.45; }
+  .chain-icono { font-size: 1rem; flex-shrink: 0; width: 20px; text-align: center; }
+  .chain-nombre { color: var(--dorado2); flex-shrink: 0; min-width: 200px; }
+  .chain-msg { color: var(--gris); font-size: .6rem; flex: 1; }
+  .chain-resumen {
+    margin-top: 12px;
+    padding: 12px 16px;
+    border-radius: 2px;
+    font-family: 'Space Mono', monospace;
+    font-size: .72rem;
+    display: none;
+  }
+  .chain-resumen.aprobado { background: rgba(42,122,42,0.15); border: 1px solid var(--verde); color: var(--verde-c); }
+  .chain-resumen.rechazado { background: rgba(192,57,43,0.15); border: 1px solid var(--rojo); color: var(--rojo-c); }
+
+  /* ── MÓDULO TEMPLATE METHOD (REPORTES) ─────────────────────────────────── */
+  .reporte-tipos {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .reporte-tipo-card {
+    border: 1px solid var(--negro5);
+    border-radius: 2px;
+    padding: 14px;
+    cursor: pointer;
+    transition: all .15s;
+    background: var(--negro3);
+  }
+  .reporte-tipo-card:hover { border-color: var(--dorado); }
+  .reporte-tipo-card.sel   { border-color: var(--dorado); background: rgba(212,160,23,.07); box-shadow: 0 0 0 1px var(--dorado); }
+  .reporte-tipo-tag  { font-family: 'Space Mono', monospace; font-size: .58rem; letter-spacing: 2px; color: var(--dorado); text-transform: uppercase; margin-bottom: 4px; }
+  .reporte-tipo-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 2px; color: var(--blanco); margin-bottom: 4px; }
+  .reporte-tipo-desc { font-size: .68rem; color: var(--gris); line-height: 1.5; }
+
+  .reporte-output {
+    margin-top: 16px;
+    display: none;
+  }
+  .reporte-output.visible { display: block; }
+  .reporte-kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .rep-kpi {
+    background: var(--negro3);
+    border: 1px solid var(--negro5);
+    border-top: 2px solid var(--dorado);
+    border-radius: 2px;
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .rep-kpi-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    color: var(--dorado2);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .rep-kpi-label {
+    font-family: 'Space Mono', monospace;
+    font-size: .58rem;
+    color: var(--gris);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+  .rep-tabla-wrap { overflow-x: auto; margin-top: 12px; }
+  .rep-tabla-wrap table { width: 100%; border-collapse: collapse; font-family: 'Space Mono', monospace; font-size: .63rem; }
+  .rep-tabla-wrap th { background: var(--negro4); color: var(--dorado); padding: 8px 10px; text-align: left; border-bottom: 2px solid var(--dorado-d); letter-spacing: 1.5px; text-transform: uppercase; font-size: .58rem; white-space: nowrap; }
+  .rep-tabla-wrap td { padding: 8px 10px; border-bottom: 1px solid var(--negro4); color: var(--blanco); vertical-align: middle; }
+  .rep-tabla-wrap tr:hover td { background: rgba(212,160,23,.04); }
+
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ──────────────────────────────────────────────────────────────── -->
+<header>
+  <div class="logo">
+    <div>
+      <div class="logo-text">BANCO UTS</div>
+      <div class="logo-sub">Sistema Bancario Core · Bucaramanga</div>
+    </div>
+  </div>
+  <div class="header-status">
+    <div class="status-dot"></div>
+    <span id="server-status">CONECTADO</span>
+    &nbsp;|&nbsp;
+    <span id="dec-status-header">DECORADORES: —</span>
+    <button class="btn-salir" onclick="window.location.href='login.html'">⏻ Cerrar sesión</button>
+  </div>
+</header>
+
+<!-- ── TOAST CONTAINER ─────────────────────────────────────────────────────── -->
+<div id="toast-container"></div>
+
+<!-- ── MAIN ────────────────────────────────────────────────────────────────── -->
+<main>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     BLOQUE 1: REGISTRO, KYC Y CREACIÓN DE CUENTA
+═══════════════════════════════════════════════════════════════════════════════ -->
+<div class="bloque">
+  <div class="bloque-corner">MÓDULO 01</div>
+  <div class="section-label">Onboarding de clientes</div>
+  <div class="section-title">Registro · KYC · Nueva Cuenta</div>
+
+  <div class="bloque-grid cols-3">
+
+    <!-- 1. Registrar usuario -->
+    <div class="sub-card">
+      <div class="sub-card-num">01</div>
+      <div class="sub-card-title">Registrar Usuario</div>
+      <div class="form-group">
+        <label>Nombre Completo</label>
+        <input type="text" id="reg-nombre" placeholder="ej: Juan Pérez">
+      </div>
+      <div class="form-group">
+        <label>Documento (Cédula)</label>
+        <input type="text" id="reg-doc" placeholder="ej: 1234567890">
+      </div>
+      <div class="form-group">
+        <label>Celular</label>
+        <input type="text" id="reg-cel" placeholder="ej: +573001234567">
+      </div>
+      <div class="form-group">
+        <label>Correo</label>
+        <input type="email" id="reg-correo" placeholder="ej: juan@email.com">
+      </div>
+      <button class="btn btn-dorado" onclick="registrarUsuario()">Registrar Usuario</button>
+      <div class="resultado-box" id="res-registro"></div>
+    </div>
+
+    <!-- 2. Verificar KYC -->
+    <div class="sub-card">
+      <div class="sub-card-num">02</div>
+      <div class="sub-card-title">Verificar KYC</div>
+      <div class="form-group">
+        <label>Documento del Usuario</label>
+        <input type="text" id="kyc-doc" placeholder="Número de documento">
+      </div>
+      <button class="btn btn-outline" onclick="verificarKYC()">Verificar KYC</button>
+      <div class="resultado-box" id="res-kyc"></div>
+    </div>
+
+    <!-- 3. Crear cuenta -->
+    <div class="sub-card">
+      <div class="sub-card-num">03</div>
+      <div class="sub-card-title">Nueva Cuenta</div>
+      <div class="form-group">
+        <label>Documento del Usuario</label>
+        <input type="text" id="cnt-doc" placeholder="Número de documento">
+      </div>
+      <div class="form-group">
+        <label>Número de Cuenta</label>
+        <input type="text" id="cnt-num" placeholder="ej: 3001">
+      </div>
+      <div class="form-group">
+        <label>Tipo de Cuenta</label>
+        <select id="cnt-tipo">
+          <option value="corriente">Corriente</option>
+          <option value="ahorros">Ahorros</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Saldo Inicial ($)</label>
+        <input type="number" id="cnt-saldo" placeholder="ej: 500000" min="0">
+      </div>
+      <div class="form-group">
+        <label>Sucursal</label>
+        <select id="cnt-sucursal">
+          <option value="1">Bucaramanga Centro</option>
+          <option value="2">Bucaramanga Norte</option>
+          <option value="3">Floridablanca</option>
+        </select>
+      </div>
+      <button class="btn btn-dorado" onclick="crearCuenta()">Crear Cuenta</button>
+      <div class="resultado-box" id="res-cuenta"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     BLOQUE 2: SERVICIOS BANCARIOS (4, 5, 6)
+═══════════════════════════════════════════════════════════════════════════════ -->
+<div class="bloque">
+  <div class="bloque-corner">MÓDULO 02</div>
+  <div class="section-label">Administración del sistema</div>
+  <div class="section-title">Usuarios · Sucursales y Cuentas</div>
+
+  <div class="bloque-grid cols-2">
+
+    <!-- 9. Ver usuarios -->
+    <div class="sub-card">
+      <div class="sub-card-num">09</div>
+      <div class="sub-card-title">Ver Todos los Usuarios</div>
+      <button class="btn btn-outline" onclick="listarUsuarios()">Cargar Usuarios</button>
+      <div class="resultado-box" id="res-usuarios">
+        <div class="tabla-scroll">
+          <table id="tabla-usuarios">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Documento</th>
+                <th>KYC</th>
+                <th>Cuentas</th>
+                <th>Celular</th>
+              </tr>
+            </thead>
+            <tbody id="usr-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10. Sucursales -->
+    <div class="sub-card">
+      <div class="sub-card-num">10</div>
+      <div class="sub-card-title">Sucursales y Cuentas Asociadas</div>
+      <button class="btn btn-outline" onclick="listarSucursales()">Cargar Sucursales</button>
+      <div class="resultado-box" id="res-sucursales"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     BLOQUE 5: REPORTES DE SUCURSALES (nuevo)
+═══════════════════════════════════════════════════════════════════════════════ -->
+<div class="bloque">
+  <div class="bloque-corner">MÓDULO 03</div>
+  <div class="section-label">Información y seguimiento</div>
+  <div class="section-title">Consultar Movimientos · Saldos de Usuario</div>
+
+  <div class="bloque-grid cols-2">
+
+    <!-- 7. Consultar movimientos -->
+    <div class="sub-card">
+      <div class="sub-card-num">07</div>
+      <div class="sub-card-title">Consultar Movimientos</div>
+      <div class="form-group">
+        <label>Número de Cuenta</label>
+        <input type="text" id="mov-cuenta" placeholder="ej: 3001">
+      </div>
+      <button class="btn btn-outline" onclick="consultarMovimientos()">Ver Movimientos</button>
+      <div class="resultado-box" id="res-movimientos">
+        <div class="tabla-scroll">
+          <table id="tabla-movimientos">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Tipo</th>
+                <th>Monto</th>
+                <th>Canal</th>
+                <th>Saldo Final</th>
+              </tr>
+            </thead>
+            <tbody id="mov-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. Saldos totales usuario -->
+    <div class="sub-card">
+      <div class="sub-card-num">08</div>
+      <div class="sub-card-title">Saldos Totales de Usuario</div>
+      <div class="form-group">
+        <label>Documento del Usuario</label>
+        <input type="text" id="sal-doc" placeholder="Número de documento">
+      </div>
+      <button class="btn btn-outline" onclick="consultarSaldosUsuario()">Consultar Saldos</button>
+      <div class="resultado-box" id="res-saldos"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     BLOQUE 4: VISTA GLOBAL (9 y 10)
+═══════════════════════════════════════════════════════════════════════════════ -->
+<div class="bloque">
+  <div class="bloque-corner">MÓDULO 04</div>
+  <div class="section-label">Operaciones financieras</div>
+  <div class="section-title">Servicios Bancarios</div>
+
+  <div class="bloque-grid cols-3">
+
+    <!-- 4. Depositar -->
+    <div class="sub-card">
+      <div class="sub-card-num">04</div>
+      <div class="sub-card-title">Depositar Dinero</div>
+      <div class="form-group">
+        <label>Número de Cuenta</label>
+        <input type="text" id="dep-cuenta" placeholder="ej: 3001">
+      </div>
+      <div class="form-group">
+        <label>Monto ($)</label>
+        <input type="number" id="dep-monto" placeholder="ej: 100000" min="1">
+      </div>
+      <div class="form-group">
+        <label>Canal</label>
+        <select id="dep-canal">
+          <option value="web">🌐 Web</option>
+          <option value="movil">📱 Móvil</option>
+          <option value="cajero">🏧 Cajero</option>
+        </select>
+      </div>
+      <button class="btn btn-dorado" onclick="depositar()">Depositar</button>
+      <div class="resultado-box" id="res-deposito"></div>
+    </div>
+
+    <!-- 5. Retirar -->
+    <div class="sub-card">
+      <div class="sub-card-num">05</div>
+      <div class="sub-card-title">Retirar Dinero</div>
+      <div class="form-group">
+        <label>Número de Cuenta</label>
+        <input type="text" id="ret-cuenta" placeholder="ej: 3001">
+      </div>
+      <div class="form-group">
+        <label>Monto ($)</label>
+        <input type="number" id="ret-monto" placeholder="ej: 50000" min="1">
+      </div>
+      <div class="form-group">
+        <label>Canal</label>
+        <select id="ret-canal">
+          <option value="cajero">🏧 Cajero</option>
+          <option value="web">🌐 Web</option>
+          <option value="movil">📱 Móvil</option>
+        </select>
+      </div>
+      <button class="btn btn-outline" onclick="retirar()">Retirar</button>
+      <div class="resultado-box" id="res-retiro"></div>
+    </div>
+
+    <!-- 6. Transferir -->
+    <div class="sub-card">
+      <div class="sub-card-num">06</div>
+      <div class="sub-card-title">Transferir Entre Cuentas</div>
+      <div class="form-group">
+        <label>Cuenta Origen</label>
+        <input type="text" id="tra-origen" placeholder="ej: 3001">
+      </div>
+      <div class="form-group">
+        <label>Cuenta Destino</label>
+        <input type="text" id="tra-destino" placeholder="ej: 3002">
+      </div>
+      <div class="form-group">
+        <label>Monto ($)</label>
+        <input type="number" id="tra-monto" placeholder="ej: 200000" min="1">
+      </div>
+      <div class="form-group">
+        <label>Canal</label>
+        <select id="tra-canal">
+          <option value="web">🌐 Web</option>
+          <option value="movil">📱 Móvil</option>
+        </select>
+      </div>
+      <button class="btn btn-dorado" onclick="transferir()">Transferir</button>
+      <div class="resultado-box" id="res-transferir"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     BLOQUE 3: CONSULTAS (7 y 8)
+═══════════════════════════════════════════════════════════════════════════════ -->
+<div class="bloque">
+  <div class="bloque-corner">MÓDULO 05</div>
+  <div class="section-label">Patrón Command aplicado</div>
+  <div class="section-title">Historial de Operaciones · Undo / Redo</div>
+
+  <!-- Explicación contextual -->
+  <div style="background:var(--negro3); border:1px solid var(--negro5); border-left:3px solid var(--dorado-d);
+       border-radius:2px; padding:14px 18px; margin-bottom:20px;
+       font-family:'Space Mono',monospace; font-size:.65rem; color:var(--gris); line-height:1.8">
+    Todas las operaciones ejecutadas desde los módulos anteriores
+    (<span style="color:var(--blanco)">Depósito, Retiro, Transferencia</span>) pasan automáticamente
+    por el <span style="color:var(--dorado2)">Invoker (HistorialComandos)</span>.
+    Cada una queda registrada como un objeto Command que puede <span style="color:var(--verde-c)">deshacerse</span>
+    o <span style="color:#6495ed">reejecutarse</span> sin modificar ninguna clase existente.
+  </div>
+
+  <!-- Panel Undo / Redo -->
+  <div class="ur-panel" id="cmd-ur-panel">
+    <div class="ur-item">
+      <div class="ur-label">Stack Undo</div>
+      <div class="ur-val" id="cmd-cnt-undo">0 commands</div>
+    </div>
+    <div class="ur-item" style="flex:1; min-width:160px">
+      <div class="ur-label">Último ejecutado</div>
+      <div class="ur-val act" id="cmd-last-undo" style="font-size:.6rem">—</div>
+    </div>
+    <div class="ur-item">
+      <div class="ur-label">Stack Redo</div>
+      <div class="ur-val" id="cmd-cnt-redo">0 commands</div>
+    </div>
+    <div class="ur-item" style="flex:1; min-width:160px">
+      <div class="ur-label">Último deshecho</div>
+      <div class="ur-val act" id="cmd-last-redo" style="font-size:.6rem">—</div>
+    </div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap">
+      <button class="btn btn-dorado"  id="btn-undo" onclick="cmdDeshacer(this)"   style="width:auto">↩ Deshacer</button>
+      <button class="btn btn-outline" id="btn-redo" onclick="cmdReejecutar(this)" style="width:auto">↪ Reejecutar</button>
+      <button class="btn btn-outline" onclick="cmdLimpiar(this)"
+              style="width:auto; border-color:var(--gris2); color:var(--gris); font-size:.6rem">✕ Limpiar</button>
+    </div>
+  </div>
+
+  <!-- Resultado de undo/redo -->
+  <div id="cmd-resultado" style="display:none; margin-bottom:16px; padding:14px 16px;
+       background:var(--negro3); border:1px solid var(--negro5); border-radius:2px;
+       font-family:'Space Mono',monospace; font-size:.68rem; line-height:1.8">
+  </div>
+
+  <!-- Historial -->
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px">
+    <div class="section-label" style="margin-bottom:0">Historial de commands</div>
+    <button class="btn btn-outline" onclick="cmdCargarHistorial(this)" style="width:auto">↻ Actualizar</button>
+  </div>
+
+  <div class="cmd-historial-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>Tipo</th><th>Cuenta(s)</th><th>Monto</th>
+          <th>Canal</th><th>Estado</th><th>Stack</th><th>Fecha</th>
+        </tr>
+      </thead>
+      <tbody id="tbody-commands">
+        <tr><td colspan="8" style="text-align:center; color:var(--gris); padding:20px">
+          Ejecuta operaciones desde los módulos anteriores para ver el historial aquí.
+        </td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="bloque">
+  <div class="bloque-corner">MÓDULO 06</div>
+  <div class="section-label">Patrón State aplicado</div>
+  <div class="section-title">Estado de Cuentas · Control y Gestión</div>
+
+  <div class="bloque-grid cols-2" style="margin-bottom:28px">
+
+    <!-- Panel izquierdo: cambiar estado -->
+    <div>
+      <div class="section-label" style="margin-bottom:10px">Cambiar estado de cuenta</div>
+      <div style="display:flex; flex-direction:column; gap:10px">
+
+        <div class="campo-group">
+          <label class="campo-label">Número de cuenta</label>
+          <input class="campo-input" id="state-numero" placeholder="Ej: 1001" type="text">
+        </div>
+
+        <div class="campo-group">
+          <label class="campo-label">Nuevo estado</label>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px">
+            <button class="btn-estado" data-estado="activa"     onclick="selEstado('activa',this)"     style="border-color:#2a7a2a; color:#4caf50">✅ Activa</button>
+            <button class="btn-estado" data-estado="bloqueada"  onclick="selEstado('bloqueada',this)"  style="border-color:#c0392b; color:#e74c3c">🔒 Bloqueada</button>
+            <button class="btn-estado" data-estado="suspendida" onclick="selEstado('suspendida',this)" style="border-color:#d35400; color:#e67e22">⏸ Suspendida</button>
+            <button class="btn-estado" data-estado="cerrada"    onclick="selEstado('cerrada',this)"    style="border-color:#555;    color:#888">🚫 Cerrada</button>
+          </div>
+        </div>
+
+        <div class="campo-group">
+          <label class="campo-label">Motivo (opcional para activa)</label>
+          <input class="campo-input" id="state-motivo" placeholder="Ej: fraude detectado, revisión solicitada..." type="text">
+        </div>
+
+        <div style="display:flex; gap:8px">
+          <button class="btn btn-dorado" onclick="cambiarEstado(this)" style="flex:1; width:auto">Cambiar Estado</button>
+          <button class="btn btn-outline" onclick="consultarEstado(this)" style="width:auto">Consultar</button>
+        </div>
+
+        <!-- Resultado consulta -->
+        <div id="state-consulta-result" style="display:none; margin-top:8px; padding:14px; background:var(--negro3); border:1px solid var(--negro5); border-radius:2px"></div>
+      </div>
+    </div>
+
+    <!-- Panel derecho: explicación del patrón -->
+    <div>
+      <div class="section-label" style="margin-bottom:10px">Flujo de transiciones</div>
+      <div style="background:var(--negro3); border:1px solid var(--negro5); border-radius:2px; padding:18px; font-family:'Space Mono',monospace; font-size:0.68rem; line-height:2">
+        <div style="color:#4caf50">● ACTIVA</div>
+        <div style="color:var(--gris); padding-left:12px">→ Bloqueada (fraude) → Suspendida (revisión) → Cerrada</div>
+        <div style="color:#e74c3c; margin-top:6px">● BLOQUEADA</div>
+        <div style="color:var(--gris); padding-left:12px">→ Activa (liberada) → Cerrada</div>
+        <div style="color:#e67e22; margin-top:6px">● SUSPENDIDA</div>
+        <div style="color:var(--gris); padding-left:12px">→ Activa (resuelta) → Cerrada</div>
+        <div style="color:#888; margin-top:6px">● CERRADA</div>
+        <div style="color:var(--gris2); padding-left:12px">→ (estado terminal — sin retorno)</div>
+        <div style="margin-top:12px; padding-top:10px; border-top:1px solid var(--negro5); color:var(--gris2); font-size:0.6rem">
+          Suspendida: acepta depósitos, bloquea retiros y transferencias.<br>
+          Bloqueada y Cerrada: rechazan todas las operaciones.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel completo: visualización de todas las cuentas -->
+  <div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px">
+      <div class="section-label" style="margin-bottom:0">Panel de cuentas — estado actual</div>
+      <button class="btn btn-outline" onclick="cargarEstadosCuentas(this)" style="width:auto">↻ Actualizar panel</button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="state-filtros" id="state-filtros" style="display:none">
+      <button class="filtro-btn activo" onclick="filtrarEstado('todos',this)">Todas</button>
+      <button class="filtro-btn" onclick="filtrarEstado('activa',this)">✅ Activas</button>
+      <button class="filtro-btn" onclick="filtrarEstado('bloqueada',this)">🔒 Bloqueadas</button>
+      <button class="filtro-btn" onclick="filtrarEstado('suspendida',this)">⏸ Suspendidas</button>
+      <button class="filtro-btn" onclick="filtrarEstado('cerrada',this)">🚫 Cerradas</button>
+    </div>
+
+    <!-- Contadores rápidos -->
+    <div id="state-counters" style="display:none; gap:12px; margin-bottom:16px" class="bloque-grid cols-4">
+      <div style="background:rgba(42,122,42,0.1); border:1px solid #2a7a2a; padding:12px; border-radius:2px; text-align:center">
+        <div style="font-family:'Bebas Neue',sans-serif; font-size:2rem; color:#4caf50" id="cnt-activa">0</div>
+        <div style="font-size:0.65rem; color:var(--gris); font-family:'Space Mono',monospace">ACTIVAS</div>
+      </div>
+      <div style="background:rgba(192,57,43,0.1); border:1px solid #c0392b; padding:12px; border-radius:2px; text-align:center">
+        <div style="font-family:'Bebas Neue',sans-serif; font-size:2rem; color:#e74c3c" id="cnt-bloqueada">0</div>
+        <div style="font-size:0.65rem; color:var(--gris); font-family:'Space Mono',monospace">BLOQUEADAS</div>
+      </div>
+      <div style="background:rgba(230,126,34,0.1); border:1px solid #d35400; padding:12px; border-radius:2px; text-align:center">
+        <div style="font-family:'Bebas Neue',sans-serif; font-size:2rem; color:#e67e22" id="cnt-suspendida">0</div>
+        <div style="font-size:0.65rem; color:var(--gris); font-family:'Space Mono',monospace">SUSPENDIDAS</div>
+      </div>
+      <div style="background:rgba(100,100,100,0.1); border:1px solid #555; padding:12px; border-radius:2px; text-align:center">
+        <div style="font-family:'Bebas Neue',sans-serif; font-size:2rem; color:#888" id="cnt-cerrada">0</div>
+        <div style="font-size:0.65rem; color:var(--gris); font-family:'Space Mono',monospace">CERRADAS</div>
+      </div>
+    </div>
+
+    <!-- Grilla de tarjetas de cuenta -->
+    <div class="state-grid" id="state-cards-grid"></div>
+  </div>
+</div>
+
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     MÓDULO 10 — PATRÓN STRATEGY · SISTEMA DE PRÉSTAMOS
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="bloque">
+  <div class="bloque-corner">MÓDULO 07</div>
+  <div class="section-label">Patrón Strategy aplicado</div>
+  <div class="section-title">Sistema de Préstamos · Interés Fijo y Variable</div>
+
+  <!-- ── SECCIÓN A: REGISTRAR PRÉSTAMO ──────────────────────────────── -->
+  <div class="section-label" style="margin-bottom:12px">Registrar nuevo préstamo</div>
+
+  <div class="bloque-grid cols-2" style="margin-bottom:28px">
+
+    <!-- Columna izquierda: datos del préstamo -->
+    <div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px">
+        <div class="campo-group">
+          <label class="campo-label">Documento usuario</label>
+          <input class="campo-input" id="prest-doc" placeholder="ej: 1234567890">
+        </div>
+        <div class="campo-group">
+          <label class="campo-label">Número de cuenta</label>
+          <input class="campo-input" id="prest-cuenta" placeholder="ej: 1001">
+        </div>
+        <div class="campo-group">
+          <label class="campo-label">Monto del préstamo ($)</label>
+          <input class="campo-input" id="prest-monto" type="number" placeholder="ej: 5000000" min="100000">
+        </div>
+        <div class="campo-group">
+          <label class="campo-label">Número de cuotas</label>
+          <input class="campo-input" id="prest-cuotas" type="number" placeholder="ej: 12" min="1" max="120">
+        </div>
+        <div class="campo-group">
+          <label class="campo-label">Tasa anual (%)</label>
+          <input class="campo-input" id="prest-tasa" type="number" placeholder="ej: 18.5" min="0.1" step="0.1">
+        </div>
+        <div class="campo-group">
+          <label class="campo-label" style="margin-bottom:6px">Acciones</label>
+          <div style="display:flex; gap:6px">
+            <button class="btn btn-outline" onclick="simularPrestamo(this)" style="width:auto; flex:1">Simular</button>
+            <button class="btn btn-dorado"  onclick="crearPrestamo(this)"   style="width:auto; flex:1">Crear</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Columna derecha: tipo de interés (Strategy) -->
+    <div>
+      <div class="section-label" style="margin-bottom:10px">Estrategia de interés (Strategy)</div>
+      <div class="prest-tipos">
+        <div class="tipo-card sel" id="tc-fijo" onclick="selTipo('fijo',this)">
+          <div class="tipo-card-tag">ConcreteStrategy A</div>
+          <div class="tipo-card-name">Interés Fijo</div>
+          <div class="tipo-card-desc">Cuota constante. Tasa acordada no cambia. Sistema francés de amortización.</div>
+        </div>
+        <div class="tipo-card" id="tc-variable" onclick="selTipo('variable',this)">
+          <div class="tipo-card-tag">ConcreteStrategy B</div>
+          <div class="tipo-card-name">Interés Variable</div>
+          <div class="tipo-card-desc">Tasa referenciada al DTF (12.5% EA) + spread banco. Puede subir o bajar.</div>
+        </div>
+      </div>
+
+      <!-- Simulador inline -->
+      <div class="simulador-box" id="simulador-box">
+        <div style="font-family:'Space Mono',monospace; font-size:.6rem; letter-spacing:2px; color:var(--dorado); text-transform:uppercase; margin-bottom:10px">Simulación del préstamo</div>
+        <div class="sim-fila"><span class="sim-key">Estrategia</span>       <span class="sim-val" id="sim-estrategia">—</span></div>
+        <div class="sim-fila"><span class="sim-key">Monto</span>            <span class="sim-val" id="sim-monto">—</span></div>
+        <div class="sim-fila"><span class="sim-key">Cuota mensual</span>    <span class="sim-val grande" id="sim-cuota">—</span></div>
+        <div class="sim-fila"><span class="sim-key">Total intereses</span>  <span class="sim-val" id="sim-intereses">—</span></div>
+        <div class="sim-fila"><span class="sim-key">Total a pagar</span>    <span class="sim-val" id="sim-total">—</span></div>
+
+        <!-- Comparación de las dos estrategias -->
+        <div style="margin-top:12px; padding-top:10px; border-top:1px solid var(--negro5)">
+          <div style="font-family:'Space Mono',monospace; font-size:.58rem; letter-spacing:2px; color:var(--gris); text-transform:uppercase; margin-bottom:8px">Comparación de estrategias</div>
+          <div id="sim-comparacion"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECCIÓN B: TABLA DE PRÉSTAMOS ──────────────────────────────── -->
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px">
+    <div class="section-label" style="margin-bottom:0">Préstamos registrados</div>
+    <button class="btn btn-outline" onclick="cargarPrestamos(this)" style="width:auto">↻ Actualizar tabla</button>
+  </div>
+
+  <div class="prestamos-tabla">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th><th>Usuario</th><th>Cuenta</th><th>Monto</th>
+          <th>Estrategia</th><th>Cuota/mes</th><th>Intereses</th>
+          <th>Total</th><th>Pagado</th><th>Pendiente</th><th>Cuotas</th><th>Estado</th><th>Creado</th>
+        </tr>
+      </thead>
+      <tbody id="tbody-prestamos">
+        <tr><td colspan="13" style="text-align:center; color:var(--gris); padding:20px">
+          Presiona Actualizar para cargar los préstamos.
+        </td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── SECCIÓN C: REGISTRAR PAGO ──────────────────────────────────── -->
+  <div style="margin-top:28px; padding-top:24px; border-top:1px solid var(--negro5)">
+    <div class="section-label" style="margin-bottom:12px">Registrar pago de cuota</div>
+
+    <div class="bloque-grid cols-2">
+
+      <!-- Formulario pago -->
+      <div>
+        <div class="campo-group" style="margin-bottom:10px">
+          <label class="campo-label">ID del préstamo</label>
+          <input class="campo-input" id="pago-id" placeholder="ej: A1B2C3D4" style="text-transform:uppercase">
+        </div>
+
+        <!-- Info del préstamo antes de pagar -->
+        <div id="pago-info" style="display:none; margin-bottom:10px; padding:12px 14px;
+             background:var(--negro3); border:1px solid var(--negro5); border-left:3px solid var(--dorado);
+             border-radius:2px; font-family:'Space Mono',monospace; font-size:.65rem; line-height:2">
+          <div style="color:var(--gris); font-size:.58rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:6px">Detalle préstamo</div>
+          <div>Usuario: <span style="color:var(--blanco)" id="pi-usuario">—</span></div>
+          <div>Cuota:   <span style="color:var(--dorado2)" id="pi-cuota">—</span></div>
+          <div>Pagadas: <span style="color:var(--blanco)" id="pi-pagadas">—</span></div>
+          <div>Estado:  <span id="pi-estado">—</span></div>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-bottom:10px">
+          <button class="btn btn-outline" onclick="buscarPrestamoPago(this)" style="width:auto; flex:1">Buscar</button>
+          <button class="btn btn-dorado"  onclick="pagarCuota(this)"         style="width:auto; flex:1">Pagar cuota fija</button>
+        </div>
+
+        <!-- Abono manual -->
+        <div style="background:var(--negro3); border:1px solid var(--negro5); border-left:3px solid var(--dorado-d); border-radius:2px; padding:12px 14px">
+          <div style="font-family:'Space Mono',monospace; font-size:.6rem; letter-spacing:2px; color:var(--dorado); text-transform:uppercase; margin-bottom:10px">Abono libre (cualquier monto)</div>
+          <div style="display:flex; gap:8px; align-items:center">
+            <input class="campo-input" type="number" id="abono-monto" placeholder="ej: 300.000" min="1000" style="flex:1">
+            <button class="btn btn-dorado" onclick="abonarManual(this)" style="width:auto; white-space:nowrap">↪ Abonar</button>
+          </div>
+          <div style="font-family:'Space Mono',monospace; font-size:.58rem; color:var(--gris); margin-top:6px">
+            Se descuenta de la cuenta del préstamo y se acumula al total pagado.
+          </div>
+        </div>
+
+        <div id="pago-resultado" style="display:none; margin-top:12px; padding:12px 14px;
+             background:var(--negro3); border:1px solid var(--negro5); border-radius:2px;
+             font-family:'Space Mono',monospace; font-size:.65rem; line-height:1.8">
+        </div>
+      </div>
+
+      <!-- Historial de pagos del préstamo seleccionado -->
+      <div>
+        <div class="section-label" style="margin-bottom:8px">Historial de pagos</div>
+        <div id="pago-historial-wrap" style="background:var(--negro3); border:1px solid var(--negro5); border-radius:2px; min-height:80px; padding:10px">
+          <div style="color:var(--gris); font-family:'Space Mono',monospace; font-size:.65rem; text-align:center; padding:16px">
+            Busca un préstamo para ver su historial.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     MÓDULO 11 — PATRÓN COMMAND · UNDO / REDO
+     ═══════════════════════════════════════════════════════════════════ -->
+<div class="bloque">
+  <div class="bloque-corner">MÓDULO 08</div>
+  <div class="section-label">Patrón Observer aplicado</div>
+  <div class="section-title">Reportes · Actividad por Sucursal</div>
+
+  <!-- Controles superiores -->
+  <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:24px">
+    <button class="btn btn-dorado" onclick="cargarReportes(event)">📊 Generar Reportes</button>
+    <div style="display:flex; gap:8px; flex-wrap:wrap" id="rep-tabs"></div>
+  </div>
+
+  <!-- Selector de pestaña de sucursal -->
+  <div id="rep-container" style="display:none">
+
+    <!-- Tarjetas de resumen rápido -->
+    <div id="rep-kpis" class="bloque-grid cols-3" style="margin-bottom:28px"></div>
+
+    <!-- Pestañas de sucursal -->
+    <div style="display:flex; gap:0; border-bottom:2px solid var(--negro5); margin-bottom:24px" id="suc-tabs"></div>
+
+    <!-- Paneles por sucursal -->
+    <div id="suc-panels"></div>
+
+    <!-- Comparativo general -->
+    <div style="margin-top:32px">
+      <div class="section-label" style="margin-bottom:6px">Vista comparativa — todas las sucursales</div>
+        <div class="bloque-grid cols-2" style="gap:20px">
+        <div class="sub-card" style="overflow:hidden; max-height:300px">
+          <div class="sub-card-title" style="margin-bottom:10px; font-size:0.7rem">Movimientos del mes por sucursal</div>
+          <div style="height:200px; position:relative; width:100%">
+            <canvas id="chart-comparativo-mes" style="max-height:200px"></canvas>
+          </div>
+        </div>
+        <div class="sub-card" style="overflow:hidden; max-height:300px">
+          <div class="sub-card-title" style="margin-bottom:10px; font-size:0.7rem">Volumen movido ($) por sucursal</div>
+          <div style="height:200px; position:relative; width:100%">
+            <canvas id="chart-comparativo-volumen" style="max-height:200px"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="resultado-box" id="res-reportes" style="display:none"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     BLOQUE 6: MANEJO DE CUENTAS A GRAN ESCALA (11 y 12)
+═══════════════════════════════════════════════════════════════════════════════ -->
+<div class="bloque">
+  <div class="bloque-corner">MÓDULO 09</div>
+  <div class="section-label">Patrón Prototype</div>
+  <div class="section-title">Prototipos · Manejo de Cuentas a Gran Escala</div>
+
+  <div class="bloque-grid cols-2">
+
+    <!-- 11. Registrar prototipo -->
+    <div class="sub-card">
+      <div class="sub-card-num">11</div>
+      <div class="sub-card-title">Registrar Cuenta Como Prototipo</div>
+      <div class="form-group">
+        <label>Número de Cuenta Base</label>
+        <input type="text" id="pro-cuenta" placeholder="ej: 3001">
+      </div>
+      <div class="form-group">
+        <label>Nombre Clave del Prototipo</label>
+        <input type="text" id="pro-nombre" placeholder="ej: ahorros_estandar">
+      </div>
+      <button class="btn btn-outline" onclick="registrarPrototipo()">Registrar Prototipo</button>
+      <hr class="divider">
+      <button class="btn btn-gris" onclick="listarPrototipos()">Ver Prototipos Registrados</button>
+      <div class="resultado-box" id="res-prototipos"></div>
+    </div>
+
+    <!-- 12. Clonar cuenta -->
+    <div class="sub-card">
+      <div class="sub-card-num">12</div>
+      <div class="sub-card-title">Manejo de Cuentas a Gran Escala (Clonar)</div>
+      <div class="form-group">
+        <label>Nombre del Prototipo</label>
+        <input type="text" id="clo-proto" placeholder="ej: ahorros_estandar">
+      </div>
+      <div class="form-group">
+        <label>Documento del Usuario Destino</label>
+        <input type="text" id="clo-doc" placeholder="Número de documento">
+      </div>
+      <div class="form-group">
+        <label>Número para la Cuenta Clonada</label>
+        <input type="text" id="clo-num" placeholder="ej: 3005">
+      </div>
+      <div class="form-group">
+        <label>Sucursal</label>
+        <select id="clo-sucursal">
+          <option value="1">Bucaramanga Centro</option>
+          <option value="2">Bucaramanga Norte</option>
+          <option value="3">Floridablanca</option>
+        </select>
+      </div>
+      <button class="btn btn-dorado" onclick="clonarCuenta()">Clonar Cuenta</button>
+      <div class="resultado-box" id="res-clonar"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     BLOQUE 7: DECORATOR (13 y 14)
+═══════════════════════════════════════════════════════════════════════════════ -->
+<div class="bloque">
+  <div class="bloque-corner">MÓDULO 10</div>
+  <div class="section-label">Patrón Decorator</div>
+  <div class="section-title">Configurar Decoradores · Trazabilidad</div>
+
+  <div class="bloque-grid cols-2">
+
+    <!-- 13. Configurar decoradores -->
+    <div class="sub-card">
+      <div class="sub-card-num">13</div>
+      <div class="sub-card-title">Configurar Decoradores Activos</div>
+
+      <div id="dec-options">
+        <div class="dec-option" data-config="1" onclick="seleccionarDec('1', this)">
+          <div class="dec-num">1</div>
+          <div class="dec-info">
+            <div class="dec-name">Solo Tiempo</div>
+            <div class="dec-desc">Mide milisegundos de cada operación</div>
+          </div>
+        </div>
+        <div class="dec-option" data-config="2" onclick="seleccionarDec('2', this)">
+          <div class="dec-num">2</div>
+          <div class="dec-info">
+            <div class="dec-name">Solo Auditoría</div>
+            <div class="dec-desc">Registra usuario, cuenta y resultado</div>
+          </div>
+        </div>
+        <div class="dec-option activo" data-config="3" onclick="seleccionarDec('3', this)">
+          <div class="dec-num">3</div>
+          <div class="dec-info">
+            <div class="dec-name">Tiempo + Auditoría ✦ Recomendado</div>
+            <div class="dec-desc">Observabilidad completa por defecto</div>
+          </div>
+        </div>
+        <div class="dec-option" data-config="4" onclick="seleccionarDec('4', this)">
+          <div class="dec-num">4</div>
+          <div class="dec-info">
+            <div class="dec-name">Auditoría + Reintento</div>
+            <div class="dec-desc">Auditoría con reintentos ante fallos técnicos</div>
+          </div>
+        </div>
+        <div class="dec-option" data-config="5" onclick="seleccionarDec('5', this)">
+          <div class="dec-num">5</div>
+          <div class="dec-info">
+            <div class="dec-name">Tiempo + Auditoría + Reintento</div>
+            <div class="dec-desc">Máxima cobertura de comportamientos</div>
+          </div>
+        </div>
+        <div class="dec-option" data-config="6" onclick="seleccionarDec('6', this)">
+          <div class="dec-num">6</div>
+          <div class="dec-info">
+            <div class="dec-name">Sin Decoradores</div>
+            <div class="dec-desc">Comportamiento original sin envolturas</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-dorado" style="margin-top:16px" onclick="aplicarDecoradores()">Aplicar Configuración</button>
+
+      <div style="margin-top:14px">
+        <div class="section-label" style="margin-bottom:6px">Decoradores Activos Actuales</div>
+        <div class="chips" id="chips-activos">
+          <span class="chip">cargando...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 14. Trazabilidad -->
+    <div class="sub-card">
+      <div class="sub-card-num">14</div>
+      <div class="sub-card-title">Trazabilidad (Demostrar Decorator)</div>
+      <div class="form-group">
+        <label>Número de Cuenta</label>
+        <input type="text" id="traz-cuenta" placeholder="ej: 3001">
+      </div>
+      <div class="form-group">
+        <label>Tipo de Operación</label>
+        <select id="traz-tipo">
+          <option value="deposito">Depósito</option>
+          <option value="retiro">Retiro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Monto ($)</label>
+        <input type="number" id="traz-monto" placeholder="ej: 100000" min="1">
+      </div>
+      <div class="form-group">
+        <label>Canal</label>
+        <select id="traz-canal">
+          <option value="web">🌐 Web</option>
+          <option value="movil">📱 Móvil</option>
+          <option value="cajero">🏧 Cajero</option>
+        </select>
+      </div>
+      <button class="btn btn-dorado" onclick="ejecutarTrazabilidad()">Ejecutar con Trazabilidad</button>
+      <div class="resultado-box" id="res-trazabilidad"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     BLOQUE 8: HERRAMIENTAS (15 y 16)
+═══════════════════════════════════════════════════════════════════════════════ -->
+<div class="bloque">
+  <div class="bloque-corner">MÓDULO 11</div>
+  <div class="section-label">Herramientas del sistema</div>
+  <div class="section-title">Eliminar Usuario · Logs del Sistema</div>
+
+  <div class="bloque-grid cols-2">
+
+    <!-- 15. Eliminar usuario -->
+    <div class="sub-card">
+      <div class="sub-card-num">15</div>
+      <div class="sub-card-title">Eliminar Usuario</div>
+      <div class="form-group">
+        <label>Documento del Usuario a Eliminar</label>
+        <input type="text" id="eli-doc" placeholder="Número de documento">
+      </div>
+      <button class="btn btn-rojo" onclick="eliminarUsuario()">⚠ Eliminar Usuario</button>
+      <div class="resultado-box" id="res-eliminar"></div>
+    </div>
+
+    <!-- 16. Logs -->
+    <div class="sub-card">
+      <div class="sub-card-num">16</div>
+      <div class="sub-card-title">Ver Logs del Sistema</div>
+      <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
+        <button class="btn btn-outline btn-sm" onclick="cargarLogs()">Cargar Logs</button>
+        <button class="btn btn-gris btn-sm" onclick="limpiarVista()">Limpiar Vista</button>
+      </div>
+      <div class="log-container" id="log-box">
+        <div class="log-line" style="color:var(--gris2)">— Presione "Cargar Logs" para ver el registro del sistema —</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MÓDULO 09 — PATRÓN STATE
+     ═══════════════════════════════════════════════════════════════════ -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MÓDULO 12 — PATRÓN MEMENTO · Historial y restauración de estados
+═══════════════════════════════════════════════════════════════════════════════ -->
+<div class="bloque">
+  <div class="bloque-corner">MÓDULO 12 · MEMENTO</div>
+  <div class="section-label">Patrón Memento</div>
+  <div class="section-title">Historial de Estados · Restaurar</div>
+
+  <div class="bloque-grid cols-2">
+
+    <!-- Historial de snapshots -->
+    <div class="sub-card">
+      <div class="sub-card-num">A</div>
+      <div class="sub-card-title">Ver Historial de Snapshots</div>
+      <div class="form-group">
+        <label>Número de Cuenta</label>
+        <input type="text" id="mem-cuenta" placeholder="ej: 1001">
+      </div>
+      <button class="btn btn-outline" onclick="memVerHistorial(event.target)">Ver Historial</button>
+
+      <div id="mem-historial-wrap" style="display:none; margin-top:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <div class="section-label" style="margin:0">Snapshots guardados</div>
+          <div id="mem-snapshot-badge" class="snapshot-badge">0 snapshots</div>
+        </div>
+        <div class="mem-historial" id="mem-historial-lista"></div>
+        <div id="mem-estado-actual" style="margin-top:10px; font-family:'Space Mono',monospace; font-size:.65rem; color:var(--gris)"></div>
+      </div>
+    </div>
+
+    <!-- Restaurar estado -->
+    <div class="sub-card">
+      <div class="sub-card-num">B</div>
+      <div class="sub-card-title">Restaurar Estado Anterior</div>
+      <p style="font-size:.78rem; color:var(--gris); margin-bottom:14px; line-height:1.6">
+        Revierte la cuenta al estado inmediatamente anterior. Cada cambio de estado guarda automáticamente un snapshot antes de aplicarse.
+      </p>
+      <div class="form-group">
+        <label>Número de Cuenta</label>
+        <input type="text" id="mem-rest-cuenta" placeholder="ej: 1001">
+      </div>
+      <button class="btn btn-dorado" onclick="memRestaurar(event.target)">↩ Restaurar Estado Anterior</button>
+      <div id="mem-resultado" style="display:none; margin-top:14px; padding:14px 16px; border-radius:2px; font-family:'Space Mono',monospace; font-size:.7rem; background:var(--negro3); border:1px solid var(--negro5);"></div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MÓDULO 13 — PATRÓN CHAIN OF RESPONSIBILITY · Validación de transacciones
+═══════════════════════════════════════════════════════════════════════════════ -->
+<div class="bloque">
+  <div class="bloque-corner">MÓDULO 13 · CHAIN</div>
+  <div class="section-label">Patrón Chain of Responsibility</div>
+  <div class="section-title">Cadena de Validación · Paso a Paso</div>
+
+  <div class="bloque-grid cols-2">
+
+    <!-- Formulario -->
+    <div class="sub-card">
+      <div class="sub-card-num">C</div>
+      <div class="sub-card-title">Configurar Transacción</div>
+      <div class="form-group">
+        <label>Número de Cuenta Origen</label>
+        <input type="text" id="chain-cuenta" placeholder="ej: 1001">
+      </div>
+      <div class="form-group">
+        <label>Monto ($)</label>
+        <input type="number" id="chain-monto" placeholder="ej: 500000" min="1">
+      </div>
+      <div class="form-group">
+        <label>Tipo de Operación</label>
+        <select id="chain-tipo" onchange="chainToggleDestino()">
+          <option value="deposito">⬇ Depósito</option>
+          <option value="retiro">⬆ Retiro</option>
+          <option value="transferencia">↔ Transferencia</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Canal</label>
+        <select id="chain-canal">
+          <option value="web">🌐 Web</option>
+          <option value="movil">📱 Móvil</option>
+          <option value="cajero">🏧 Cajero</option>
+        </select>
+      </div>
+      <div class="form-group" id="chain-destino-wrap" style="display:none">
+        <label>Cuenta Destino</label>
+        <input type="text" id="chain-destino" placeholder="ej: 1002">
+      </div>
+      <div style="display:flex; gap:8px; margin-top:4px;">
+        <button class="btn btn-outline" style="flex:1" onclick="chainValidar(event.target)">🔍 Solo Validar</button>
+        <button class="btn btn-dorado" style="flex:1" onclick="chainEjecutar(event.target)">▶ Validar y Ejecutar</button>
+      </div>
+    </div>
+
+    <!-- Cadena visual -->
+    <div class="sub-card">
+      <div class="sub-card-num">D</div>
+      <div class="sub-card-title">Eslabones de la Cadena</div>
+
+      <div class="chain-pasos" id="chain-pasos">
+        <div class="chain-paso pending"><span class="chain-icono">○</span><span class="chain-nombre">ValidadorEstadoCuenta</span><span class="chain-msg">Esperando...</span></div>
+        <div class="chain-paso pending"><span class="chain-icono">○</span><span class="chain-nombre">ValidadorSaldo</span><span class="chain-msg">Esperando...</span></div>
+        <div class="chain-paso pending"><span class="chain-icono">○</span><span class="chain-nombre">ValidadorLimiteCanal</span><span class="chain-msg">Esperando...</span></div>
+        <div class="chain-paso pending"><span class="chain-icono">○</span><span class="chain-nombre">ValidadorFrecuencia</span><span class="chain-msg">Esperando...</span></div>
+        <div class="chain-paso pending"><span class="chain-icono">○</span><span class="chain-nombre">ValidadorCuentaDestino</span><span class="chain-msg">Esperando...</span></div>
+      </div>
+
+      <div class="chain-resumen" id="chain-resumen"></div>
+      <div id="chain-exec-resultado" style="display:none; margin-top:10px; padding:12px 14px; border-radius:2px; font-family:'Space Mono',monospace; font-size:.68rem; background:var(--negro3); border:1px solid var(--negro5);"></div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     MÓDULO 14 — PATRÓN TEMPLATE METHOD · Centro de Reportes
+═══════════════════════════════════════════════════════════════════════════════ -->
+<div class="bloque">
+  <div class="bloque-corner">MÓDULO 14 · TEMPLATE METHOD</div>
+  <div class="section-label">Patrón Template Method</div>
+  <div class="section-title">Centro de Reportes Bancarios</div>
+
+  <div class="bloque-grid cols-2">
+
+    <!-- Selector y formulario -->
+    <div class="sub-card">
+      <div class="sub-card-num">E</div>
+      <div class="sub-card-title">Configurar Reporte</div>
+
+      <div class="reporte-tipos">
+        <div class="reporte-tipo-card sel" data-tipo="movimientos" onclick="repSelTipo(this)">
+          <div class="reporte-tipo-tag">Template A</div>
+          <div class="reporte-tipo-name">Movimientos</div>
+          <div class="reporte-tipo-desc">Historial y estadísticas de una cuenta</div>
+        </div>
+        <div class="reporte-tipo-card" data-tipo="prestamos" onclick="repSelTipo(this)">
+          <div class="reporte-tipo-tag">Template B</div>
+          <div class="reporte-tipo-name">Préstamos</div>
+          <div class="reporte-tipo-desc">Resumen de préstamos de un usuario</div>
+        </div>
+        <div class="reporte-tipo-card" data-tipo="sucursal" onclick="repSelTipo(this)">
+          <div class="reporte-tipo-tag">Template C</div>
+          <div class="reporte-tipo-name">Sucursal</div>
+          <div class="reporte-tipo-desc">Actividad consolidada de una sucursal</div>
+        </div>
+        <div class="reporte-tipo-card" data-tipo="usuario" onclick="repSelTipo(this)">
+          <div class="reporte-tipo-tag">Template D</div>
+          <div class="reporte-tipo-name">Usuario</div>
+          <div class="reporte-tipo-desc">Resumen completo de un cliente</div>
+        </div>
+      </div>
+
+      <div id="rep-param-cuenta" class="form-group">
+        <label>Número de Cuenta</label>
+        <input type="text" id="rep-numero-cuenta" placeholder="ej: 1001">
+      </div>
+      <div id="rep-param-doc" class="form-group" style="display:none">
+        <label>Documento del Usuario</label>
+        <input type="text" id="rep-documento" placeholder="ej: 1234567890">
+      </div>
+      <div id="rep-param-suc" class="form-group" style="display:none">
+        <label>Nombre de Sucursal</label>
+        <select id="rep-sucursal">
+          <option value="Bucaramanga Centro">Bucaramanga Centro</option>
+          <option value="Bucaramanga Norte">Bucaramanga Norte</option>
+          <option value="Floridablanca">Floridablanca</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Período (días)</label>
+        <select id="rep-periodo">
+          <option value="7">Últimos 7 días</option>
+          <option value="30" selected>Últimos 30 días</option>
+          <option value="90">Últimos 90 días</option>
+          <option value="365">Últimos 365 días</option>
+        </select>
+      </div>
+      <button class="btn btn-dorado" onclick="generarReporte(event.target)">📊 Generar Reporte</button>
+    </div>
+
+    <!-- Resultado del reporte -->
+    <div class="sub-card">
+      <div class="sub-card-num">F</div>
+      <div class="sub-card-title">Resultado del Reporte</div>
+
+      <div id="rep-placeholder" style="color:var(--gris2); font-family:'Space Mono',monospace; font-size:.65rem; text-align:center; padding:40px 0;">
+        — Seleccione tipo y parámetros, luego presione Generar Reporte —
+      </div>
+
+      <div class="reporte-output" id="rep-output">
+        <div style="font-family:'Space Mono',monospace; font-size:.62rem; color:var(--dorado); letter-spacing:2px; text-transform:uppercase; margin-bottom:10px;" id="rep-titulo"></div>
+        <div class="reporte-kpis" id="rep-kpis"></div>
+        <div style="margin-top:12px;">
+          <div class="section-label" style="margin-bottom:8px" id="rep-tabla-titulo">Detalle</div>
+          <div class="rep-tabla-wrap" id="rep-tabla"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</main>
+
+<!-- ─────────────────────────────────────────────────────────────────────────── -->
+<script>
+  const API = 'http://127.0.0.1:5000/api';
+  let decSeleccionado = '3';
+
+  // ── Toast ─────────────────────────────────────────────────────────────────
+  function toast(msg, tipo = 'info', titulo = null) {
+    const iconos = { exito: '✅', error: '❌', info: 'ℹ️' };
+    const titulos = { exito: 'ÉXITO', error: 'ERROR', info: 'INFO' };
+
+    const el = document.createElement('div');
+    el.className = `toast ${tipo}`;
+    el.innerHTML = `
+      <div class="toast-icon">${iconos[tipo]}</div>
+      <div class="toast-body">
+        <div class="toast-title">${titulo || titulos[tipo]}</div>
+        <div class="toast-msg">${msg}</div>
+      </div>
+      <button class="toast-close" onclick="this.parentElement.remove()">✕</button>
+      <div class="toast-bar"></div>
+    `;
+
+    document.getElementById('toast-container').prepend(el);
+    setTimeout(() => el.style.opacity = '0', 3900);
+    setTimeout(() => el.remove(), 4200);
+  }
+
+  // ── Loading en botón ──────────────────────────────────────────────────────
+  function setLoading(btn, estado) {
+    if (estado) btn.classList.add('loading');
+    else btn.classList.remove('loading');
+  }
+
+  // ── Mostrar resultado ─────────────────────────────────────────────────────
+  function mostrarResultado(id, filas) {
+    const box = document.getElementById(id);
+    box.classList.add('visible');
+    box.innerHTML = filas.map(([k, v, cls]) =>
+      `<div class="resultado-fila">
+        <span class="resultado-key">${k}</span>
+        <span class="resultado-val ${cls||''}">${v}</span>
+      </div>`
+    ).join('');
+  }
+
+  function ocultarResultado(id) {
+    const box = document.getElementById(id);
+    box.classList.remove('visible');
+  }
+
+  // ── API call ──────────────────────────────────────────────────────────────
+  async function api(method, path, body, btn) {
+    if (btn) setLoading(btn, true);
+    try {
+      const opts = {
+        method,
+        headers: { 'Content-Type': 'application/json' }
+      };
+      if (body) opts.body = JSON.stringify(body);
+      const r = await fetch(API + path, opts);
+      return await r.json();
+    } catch (e) {
+      toast('No se pudo conectar con el servidor. Asegúrese de que api.py esté corriendo en puerto 5000.', 'error');
+      return null;
+    } finally {
+      if (btn) setLoading(btn, false);
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 1. REGISTRAR USUARIO
+  // ─────────────────────────────────────────────────────────────────────────
+  async function registrarUsuario() {
+    const btn = event.target;
+    const r = await api('POST', '/usuarios/registrar', {
+      nombre:    document.getElementById('reg-nombre').value,
+      documento: document.getElementById('reg-doc').value,
+      celular:   document.getElementById('reg-cel').value,
+      correo:    document.getElementById('reg-correo').value,
+    }, btn);
+    if (!r) return;
+    if (r.ok) {
+      toast(r.mensaje, 'exito');
+      mostrarResultado('res-registro', [
+        ['Nombre', r.data.nombre, 'dorado'],
+        ['Documento', r.data.documento],
+        ['Celular', r.data.celular || '—'],
+        ['Correo', r.data.correo || '—'],
+        ['KYC', 'Pendiente', 'rojo'],
+      ]);
+    } else {
+      toast(r.mensaje, 'error');
+      ocultarResultado('res-registro');
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 2. VERIFICAR KYC
+  // ─────────────────────────────────────────────────────────────────────────
+  async function verificarKYC() {
+    const btn = event.target;
+    const r = await api('POST', '/usuarios/kyc', {
+      documento: document.getElementById('kyc-doc').value,
+    }, btn);
+    if (!r) return;
+    if (r.ok) {
+      toast(r.mensaje, 'exito');
+      mostrarResultado('res-kyc', [
+        ['Usuario', r.data.nombre, 'dorado'],
+        ['Documento', r.data.documento],
+        ['KYC', '✅ Verificado', 'verde'],
+      ]);
+    } else {
+      toast(r.mensaje, 'error');
+      ocultarResultado('res-kyc');
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 3. CREAR CUENTA
+  // ─────────────────────────────────────────────────────────────────────────
+  async function crearCuenta() {
+    const btn = event.target;
+    const r = await api('POST', '/cuentas/crear', {
+      documento:       document.getElementById('cnt-doc').value,
+      numero:          document.getElementById('cnt-num').value,
+      tipo:            document.getElementById('cnt-tipo').value,
+      saldo_inicial:   parseFloat(document.getElementById('cnt-saldo').value) || 0,
+      indice_sucursal: parseInt(document.getElementById('cnt-sucursal').value),
+    }, btn);
+    if (!r) return;
+    if (r.ok) {
+      toast(r.mensaje, 'exito');
+      mostrarResultado('res-cuenta', [
+        ['Número', r.data.numero, 'dorado'],
+        ['Tipo', r.data.tipo],
+        ['Saldo Inicial', `$${r.data.saldo.toLocaleString('es-CO')}`, 'verde'],
+      ]);
+    } else {
+      toast(r.mensaje, 'error');
+      ocultarResultado('res-cuenta');
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 4. DEPOSITAR
+  // ─────────────────────────────────────────────────────────────────────────
+  async function depositar() {
+    const btn = event.target;
+    const r = await api('POST', '/operaciones/depositar', {
+      numero_cuenta: document.getElementById('dep-cuenta').value,
+      monto:         parseFloat(document.getElementById('dep-monto').value),
+      canal:         document.getElementById('dep-canal').value,
+    }, btn);
+    if (!r) return;
+    if (r.ok) {
+      toast(r.mensaje, 'exito');
+      mostrarResultado('res-deposito', [
+        ['Cuenta', r.data.numero, 'dorado'],
+        ['Saldo Actual', `$${r.data.saldo_actual?.toLocaleString('es-CO')}`, 'verde'],
+      ]);
+    } else {
+      toast(r.mensaje, 'error');
+      ocultarResultado('res-deposito');
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 5. RETIRAR
+  // ─────────────────────────────────────────────────────────────────────────
+  async function retirar() {
+    const btn = event.target;
+    const r = await api('POST', '/operaciones/retirar', {
+      numero_cuenta: document.getElementById('ret-cuenta').value,
+      monto:         parseFloat(document.getElementById('ret-monto').value),
+      canal:         document.getElementById('ret-canal').value,
+    }, btn);
+    if (!r) return;
+    if (r.ok) {
+      toast(r.mensaje, 'exito');
+      mostrarResultado('res-retiro', [
+        ['Cuenta', r.data.numero, 'dorado'],
+        ['Saldo Actual', `$${r.data.saldo_actual?.toLocaleString('es-CO')}`, 'verde'],
+      ]);
+    } else {
+      toast(r.mensaje, 'error');
+      ocultarResultado('res-retiro');
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 6. TRANSFERIR
+  // ─────────────────────────────────────────────────────────────────────────
+  async function transferir() {
+    const btn = event.target;
+    const r = await api('POST', '/operaciones/transferir', {
+      numero_origen:  document.getElementById('tra-origen').value,
+      numero_destino: document.getElementById('tra-destino').value,
+      monto:          parseFloat(document.getElementById('tra-monto').value),
+      canal:          document.getElementById('tra-canal').value,
+    }, btn);
+    if (!r) return;
+    if (r.ok) {
+      toast(r.mensaje, 'exito');
+      mostrarResultado('res-transferir', [
+        ['Origen', r.data.origen.numero, 'dorado'],
+        ['Saldo Origen', `$${r.data.origen.saldo?.toLocaleString('es-CO')}`, 'verde'],
+        ['Destino', r.data.destino.numero, 'dorado'],
+        ['Saldo Destino', `$${r.data.destino.saldo?.toLocaleString('es-CO')}`, 'verde'],
+      ]);
+    } else {
+      toast(r.mensaje, 'error');
+      ocultarResultado('res-transferir');
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 7. CONSULTAR MOVIMIENTOS
+  // ─────────────────────────────────────────────────────────────────────────
+  async function consultarMovimientos() {
+    const btn = event.target;
+    const num = document.getElementById('mov-cuenta').value.trim();
+    if (!num) { toast('Ingrese un número de cuenta.', 'error'); return; }
+
+    const r = await api('GET', `/cuentas/movimientos/${num}`, null, btn);
+    if (!r) return;
+
+    const box = document.getElementById('res-movimientos');
+    box.classList.add('visible');
+
+    if (!r.ok) { toast(r.mensaje, 'error'); return; }
+    toast(`Cuenta ${r.data.numero} — ${r.data.total_movimientos} movimientos`, 'exito');
+
+    const tbody = document.getElementById('mov-tbody');
+    if (!r.data.movimientos.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="color:var(--gris); text-align:center">Sin movimientos registrados</td></tr>';
+      return;
+    }
+    tbody.innerHTML = r.data.movimientos.map(m => {
+      const esCredito = m.tipo === 'deposito';
+      const color = esCredito ? 'var(--verde-c)' : 'var(--rojo-c)';
+      return `<tr>
+        <td>${m.fecha}</td>
+        <td><span class="badge ${esCredito ? 'badge-verde' : 'badge-rojo'}">${m.tipo}</span></td>
+        <td style="color:${color}">$${m.monto.toLocaleString('es-CO')}</td>
+        <td>${m.canal}</td>
+        <td>$${m.saldo_final.toLocaleString('es-CO')}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 8. SALDOS USUARIO
+  // ─────────────────────────────────────────────────────────────────────────
+  async function consultarSaldosUsuario() {
+    const btn = event.target;
+    const doc = document.getElementById('sal-doc').value.trim();
+    if (!doc) { toast('Ingrese un documento.', 'error'); return; }
+
+    const r = await api('GET', `/usuarios/saldos/${doc}`, null, btn);
+    if (!r) return;
+    if (!r.ok) { toast(r.mensaje, 'error'); return; }
+
+    toast(`Saldos de ${r.data.nombre}`, 'exito');
+    const filas = r.data.cuentas.map(c =>
+      [`${c.numero} (${c.tipo})`, `$${c.saldo.toLocaleString('es-CO')}`, 'dorado']
+    );
+    filas.push(['TOTAL', `$${r.data.total.toLocaleString('es-CO')}`, 'verde']);
+    mostrarResultado('res-saldos', [
+      ['Usuario', r.data.nombre, 'dorado'],
+      ...filas
+    ]);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 9. LISTAR USUARIOS
+  // ─────────────────────────────────────────────────────────────────────────
+  async function listarUsuarios() {
+    const btn = event.target;
+    const r = await api('GET', '/usuarios', null, btn);
+    if (!r) return;
+
+    const box = document.getElementById('res-usuarios');
+    box.classList.add('visible');
+
+    if (!r.ok) { toast(r.mensaje, 'error'); return; }
+    toast(`${r.data.length} usuario(s) cargados`, 'info');
+
+    const tbody = document.getElementById('usr-tbody');
+    if (!r.data.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="color:var(--gris); text-align:center">No hay usuarios registrados</td></tr>';
+      return;
+    }
+    tbody.innerHTML = r.data.map(u => `
+      <tr>
+        <td>${u.nombre}</td>
+        <td style="font-family:monospace">${u.documento}</td>
+        <td><span class="badge ${u.kyc ? 'badge-verde' : 'badge-rojo'}">${u.kyc ? '✅ Verificado' : '❌ Pendiente'}</span></td>
+        <td>${u.cuentas.map(c => `<span class="badge badge-dorado">${c.numero}</span>`).join(' ') || '<span class="badge badge-gris">Sin cuentas</span>'}</td>
+        <td style="color:var(--gris)">${u.celular || '—'}</td>
+      </tr>
+    `).join('');
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 10. SUCURSALES
+  // ─────────────────────────────────────────────────────────────────────────
+  async function listarSucursales() {
+    const btn = event.target;
+    const r = await api('GET', '/sucursales', null, btn);
+    if (!r) return;
+    if (!r.ok) { toast(r.mensaje, 'error'); return; }
+
+    toast('Sucursales cargadas', 'info');
+    const box = document.getElementById('res-sucursales');
+    box.classList.add('visible');
+    box.innerHTML = r.data.map(s => `
+      <div style="margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid var(--negro4)">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+          <span style="font-family:'Space Mono',monospace; font-size:0.75rem; color:var(--dorado2)">🏦 ${s.nombre}</span>
+          <span style="font-family:'Space Mono',monospace; font-size:0.7rem; color:var(--verde-c)">$${s.saldo_total.toLocaleString('es-CO')}</span>
+        </div>
+        ${s.cuentas.length
+          ? s.cuentas.map(c => `
+            <div class="resultado-fila">
+              <span class="resultado-key">${c.numero} (${c.tipo})</span>
+              <span class="resultado-val dorado">$${c.saldo.toLocaleString('es-CO')}</span>
+            </div>
+          `).join('')
+          : '<div style="color:var(--gris); font-size:0.75rem">Sin cuentas asociadas</div>'
+        }
+      </div>
+    `).join('') || '<div style="color:var(--gris)">No hay sucursales</div>';
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 11. REGISTRAR PROTOTIPO
+  // ─────────────────────────────────────────────────────────────────────────
+  async function registrarPrototipo() {
+    const btn = event.target;
+    const r = await api('POST', '/prototipos/registrar', {
+      numero_cuenta: document.getElementById('pro-cuenta').value,
+      nombre_proto:  document.getElementById('pro-nombre').value,
+    }, btn);
+    if (!r) return;
+    if (r.ok) {
+      toast(r.mensaje, 'exito');
+      mostrarResultado('res-prototipos', [
+        ['Prototipo', r.data.nombre, 'dorado'],
+        ['Tipo', r.data.tipo],
+        ['Saldo Base', `$${r.data.saldo.toLocaleString('es-CO')}`, 'verde'],
+      ]);
+    } else {
+      toast(r.mensaje, 'error');
+    }
+  }
+
+  async function listarPrototipos() {
+    const btn = event.target;
+    const r = await api('GET', '/prototipos', null, btn);
+    if (!r) return;
+
+    toast(`${r.data.length} prototipo(s) registrados`, 'info');
+    const box = document.getElementById('res-prototipos');
+    box.classList.add('visible');
+
+    if (!r.data.length) {
+      box.innerHTML = '<div style="color:var(--gris); font-size:0.8rem; text-align:center">No hay prototipos registrados aún.</div>';
+      return;
+    }
+    box.innerHTML = r.data.map(p => `
+      <div class="resultado-fila">
+        <span class="resultado-key">${p.nombre}</span>
+        <span class="resultado-val">
+          <span class="badge badge-dorado">${p.tipo}</span>
+          &nbsp; $${p.saldo.toLocaleString('es-CO')}
+          &nbsp; <span style="color:var(--gris)">base: ${p.numero_base}</span>
+        </span>
+      </div>
+    `).join('');
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 12. CLONAR CUENTA
+  // ─────────────────────────────────────────────────────────────────────────
+  async function clonarCuenta() {
+    const btn = event.target;
+    const r = await api('POST', '/prototipos/clonar', {
+      nombre_proto:    document.getElementById('clo-proto').value,
+      documento:       document.getElementById('clo-doc').value,
+      nuevo_numero:    document.getElementById('clo-num').value,
+      indice_sucursal: parseInt(document.getElementById('clo-sucursal').value),
+    }, btn);
+    if (!r) return;
+    if (r.ok) {
+      toast(r.mensaje, 'exito');
+      mostrarResultado('res-clonar', [
+        ['Cuenta Clonada', r.data.numero, 'dorado'],
+        ['Tipo Heredado', r.data.tipo],
+        ['Saldo Heredado', `$${r.data.saldo.toLocaleString('es-CO')}`, 'verde'],
+        ['Desde Prototipo', r.data.prototipo_origen],
+      ]);
+    } else {
+      toast(r.mensaje, 'error');
+      ocultarResultado('res-clonar');
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 13. DECORADORES
+  // ─────────────────────────────────────────────────────────────────────────
+  function seleccionarDec(config, el) {
+    decSeleccionado = config;
+    document.querySelectorAll('.dec-option').forEach(e => e.classList.remove('activo'));
+    el.classList.add('activo');
+  }
+
+  async function aplicarDecoradores() {
+    const btn = event.target;
+    const r = await api('POST', '/decoradores/configurar', { config: decSeleccionado }, btn);
+    if (!r) return;
+    if (r.ok) {
+      toast(r.mensaje, 'exito');
+      actualizarChips(r.data.decoradores_activos);
+    } else {
+      toast(r.mensaje, 'error');
+    }
+  }
+
+  function actualizarChips(lista) {
+    const cont = document.getElementById('chips-activos');
+    if (!lista || !lista.length) {
+      cont.innerHTML = '<span class="chip" style="border-color:var(--gris2); color:var(--gris)">sin decoradores</span>';
+    } else {
+      cont.innerHTML = lista.map(d => `<span class="chip">${d}</span>`).join('');
+    }
+
+    // también header
+    document.getElementById('dec-status-header').textContent =
+      'DECORADORES: ' + (lista.length ? lista.join(' + ').toUpperCase() : 'NINGUNO');
+  }
+
+  async function cargarDecoradores() {
+    const r = await api('GET', '/decoradores/activos', null, null);
+    if (r && r.ok) actualizarChips(r.data.decoradores_activos);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 14. TRAZABILIDAD
+  // ─────────────────────────────────────────────────────────────────────────
+  async function ejecutarTrazabilidad() {
+    const btn = event.target;
+    const r = await api('POST', '/decoradores/trazabilidad', {
+      numero_cuenta: document.getElementById('traz-cuenta').value,
+      monto:         parseFloat(document.getElementById('traz-monto').value),
+      canal:         document.getElementById('traz-canal').value,
+      tipo:          document.getElementById('traz-tipo').value,
+    }, btn);
+    if (!r) return;
+
+    const box = document.getElementById('res-trazabilidad');
+    box.classList.add('visible');
+
+    if (!r.ok) { toast(r.mensaje, 'error'); return; }
+
+    const d = r.data;
+    toast(r.mensaje, d.exito ? 'exito' : 'error');
+
+    box.innerHTML = `
+      <div class="resultado-fila">
+        <span class="resultado-key">Resultado</span>
+        <span class="resultado-val ${d.exito ? 'verde' : 'rojo'}">${d.exito ? '✅ EXITOSA' : '❌ RECHAZADA'}</span>
+      </div>
+      <div class="resultado-fila">
+        <span class="resultado-key">Saldo Actual</span>
+        <span class="resultado-val dorado">$${d.saldo_actual?.toLocaleString('es-CO')}</span>
+      </div>
+      <div class="resultado-fila">
+        <span class="resultado-key">Decoradores</span>
+        <span class="resultado-val">${d.decoradores_usados.join(' → ') || 'ninguno'}</span>
+      </div>
+      <div style="margin-top:12px; font-family:'Space Mono',monospace; font-size:0.62rem; color:var(--gris); letter-spacing:1px; text-transform:uppercase; margin-bottom:6px">Logs generados:</div>
+      <div style="background:var(--negro); padding:10px; border-radius:2px; max-height:180px; overflow-y:auto">
+        ${d.logs_operacion.map(l => {
+          const nivel = l.match(/\[(SUCCESS|WARNING|ERROR|INFO)\]/)?.[1] || 'INFO';
+          const cls = { SUCCESS: 'verde-c', WARNING: 'naranja', ERROR: 'rojo-c', INFO: '' }[nivel] || '';
+          return `<div style="font-family:'Space Mono',monospace; font-size:0.62rem; color:var(--${cls || 'gris'}); margin-bottom:2px; word-break:break-all">${l}</div>`;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 15. ELIMINAR USUARIO
+  // ─────────────────────────────────────────────────────────────────────────
+  async function eliminarUsuario() {
+    const btn = event.target;
+    const doc = document.getElementById('eli-doc').value.trim();
+    if (!doc) { toast('Ingrese un documento.', 'error'); return; }
+
+    if (!confirm(`¿Está seguro de que desea eliminar el usuario con documento ${doc}? Esta acción no se puede deshacer.`)) return;
+
+    const r = await api('DELETE', '/usuarios/eliminar', { documento: doc }, btn);
+    if (!r) return;
+    if (r.ok) {
+      toast(r.mensaje, 'exito');
+      mostrarResultado('res-eliminar', [
+        ['Usuario Eliminado', r.data.nombre, 'rojo'],
+        ['Cuentas Desvinculadas', r.data.cuentas_eliminadas, 'rojo'],
+      ]);
+    } else {
+      toast(r.mensaje, 'error');
+      ocultarResultado('res-eliminar');
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 16. LOGS
+  // ─────────────────────────────────────────────────────────────────────────
+  async function cargarLogs() {
+    const btn = event.target;
+    const r = await api('GET', '/logs', null, btn);
+    if (!r) return;
+
+    const box = document.getElementById('log-box');
+    toast(`${r.data.total} entradas de log`, 'info');
+
+    box.innerHTML = r.data.logs.map(l => {
+      const nivel = l.match(/\[(SUCCESS|WARNING|ERROR|INFO)\]/)?.[1] || 'INFO';
+      return `<div class="log-line ${nivel}">${l}</div>`;
+    }).join('\n');
+
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function limpiarVista() {
+    document.getElementById('log-box').innerHTML =
+      '<div class="log-line" style="color:var(--gris2)">— Vista limpiada —</div>';
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // REPORTES DE SUCURSALES (Módulo 05)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  // Mapa de instancias de Chart para destruir antes de redibujar
+  const _charts = {};
+
+  function destroyChart(id) {
+    if (_charts[id]) { _charts[id].destroy(); delete _charts[id]; }
+  }
+
+  const COLORES_SUCURSAL = [
+    { borde: '#d4a017', fondo: 'rgba(212,160,23,0.25)' },
+    { borde: '#2980b9', fondo: 'rgba(41,128,185,0.25)' },
+    { borde: '#27ae60', fondo: 'rgba(39,174,96,0.25)' },
+  ];
+
+  const COLORES_TIPO = {
+    deposito:      { borde: '#4caf50', fondo: 'rgba(76,175,80,0.7)' },
+    retiro:        { borde: '#e74c3c', fondo: 'rgba(231,76,60,0.7)' },
+    transferencia: { borde: '#d4a017', fondo: 'rgba(212,160,23,0.7)' },
+  };
+
+  const COLORES_CANAL = {
+    web:    { borde: '#2980b9', fondo: 'rgba(41,128,185,0.75)' },
+    movil:  { borde: '#8e44ad', fondo: 'rgba(142,68,173,0.75)' },
+    cajero: { borde: '#e67e22', fondo: 'rgba(230,126,34,0.75)' },
+  };
+
+  const CFG_BASE = {
+    plugins: { legend: { labels: { color: '#888', font: { family: 'Space Mono', size: 10 } } } },
+    scales: {
+      x: { ticks: { color: '#555', font: { family: 'Space Mono', size: 9 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+      y: { ticks: { color: '#555', font: { family: 'Space Mono', size: 9 } }, grid: { color: 'rgba(255,255,255,0.06)' }, beginAtZero: true },
+    }
+  };
+
+  function mkChart(id, type, data, extraOpts = {}) {
+    destroyChart(id);
+    const ctx = document.getElementById(id);
+    if (!ctx) return;
+    _charts[id] = new Chart(ctx, {
+      type,
+      data,
+      options: { ...CFG_BASE, ...extraOpts, responsive: true, maintainAspectRatio: false }
+    });
+  }
+
+  async function cargarReportes(evt) {
+    const btn = evt.target;
+    const r = await api('GET', '/reportes/sucursales', null, btn);
+    if (!r) return;
+    if (!r.ok) { toast(r.mensaje, 'error'); return; }
+
+    const datos = r.data;
+    toast(`Reportes de ${datos.length} sucursal(es) generados`, 'exito');
+
+    document.getElementById('rep-container').style.display = 'block';
+
+    // ── KPIs globales ─────────────────────────────────────────────────────
+    const totalHoy = datos.reduce((s, d) => s + d.hoy.total, 0);
+    const totalMes = datos.reduce((s, d) => s + d.mes.total, 0);
+    const volMes   = datos.reduce((s, d) =>
+      s + Object.values(d.mes.volumen_tipo).reduce((a, b) => a + b, 0), 0);
+
+    document.getElementById('rep-kpis').innerHTML = `
+      <div class="kpi-card">
+        <div class="kpi-num">${totalHoy}</div>
+        <div class="kpi-label">Movimientos hoy</div>
+        <div class="kpi-sub">todas las sucursales</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-num">${totalMes}</div>
+        <div class="kpi-label">Movimientos últimos 30 días</div>
+        <div class="kpi-sub">todas las sucursales</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-num">$${Math.round(volMes).toLocaleString('es-CO')}</div>
+        <div class="kpi-label">Volumen total mes</div>
+        <div class="kpi-sub">depósitos + retiros + transf.</div>
+      </div>
+    `;
+
+    // ── Pestañas por sucursal ─────────────────────────────────────────────
+    const tabsEl   = document.getElementById('suc-tabs');
+    const panelsEl = document.getElementById('suc-panels');
+    tabsEl.innerHTML   = '';
+    panelsEl.innerHTML = '';
+
+    datos.forEach((suc, idx) => {
+      const id = `suc-${idx}`;
+
+      // Tab
+      const tab = document.createElement('button');
+      tab.className = 'suc-tab' + (idx === 0 ? ' activo' : '');
+      tab.textContent = suc.sucursal;
+      tab.onclick = () => {
+        document.querySelectorAll('.suc-tab').forEach(t => t.classList.remove('activo'));
+        document.querySelectorAll('.suc-panel').forEach(p => p.classList.remove('activo'));
+        tab.classList.add('activo');
+        document.getElementById(id).classList.add('activo');
+      };
+      tabsEl.appendChild(tab);
+
+      // Panel
+      const panel = document.createElement('div');
+      panel.className = 'suc-panel' + (idx === 0 ? ' activo' : '');
+      panel.id = id;
+
+      const volTotal = Object.values(suc.mes.volumen_tipo).reduce((a, b) => a + b, 0);
+
+      panel.innerHTML = `
+        <div class="bloque-grid cols-3" style="margin-bottom:16px; gap:10px">
+          <div class="kpi-card" style="padding:14px 16px">
+            <div class="kpi-num" style="font-size:1.4rem">${suc.hoy.total}</div>
+            <div class="kpi-label">Movimientos hoy</div>
+          </div>
+          <div class="kpi-card" style="padding:14px 16px">
+            <div class="kpi-num" style="font-size:1.4rem">${suc.mes.total}</div>
+            <div class="kpi-label">Movimientos (30 días)</div>
+          </div>
+          <div class="kpi-card" style="padding:14px 16px">
+            <div class="kpi-num" style="font-size:1rem">$${Math.round(volTotal).toLocaleString('es-CO')}</div>
+            <div class="kpi-label">Volumen mes</div>
+          </div>
+        </div>
+
+        <div class="bloque-grid cols-2" style="gap:16px; margin-bottom:16px">
+          <!-- Gráfico 1: Movimientos por día -->
+          <div class="sub-card" style="overflow:hidden; max-height:280px">
+            <div class="sub-card-title" style="margin-bottom:10px; font-size:0.7rem">📅 Movimientos por día (últimos 30 días)</div>
+            <div style="height:180px; position:relative; width:100%">
+              <canvas id="chart-dia-${idx}" style="max-height:180px"></canvas>
+            </div>
+          </div>
+          <!-- Gráfico 2: Tipo de operación mes -->
+          <div class="sub-card" style="overflow:hidden; max-height:280px">
+            <div class="sub-card-title" style="margin-bottom:10px; font-size:0.7rem">🔄 Tipo de operación — mes completo</div>
+            <div style="height:180px; position:relative; width:100%">
+              <canvas id="chart-tipo-${idx}" style="max-height:180px"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="bloque-grid cols-2" style="gap:16px">
+          <!-- Gráfico 3: Canal -->
+          <div class="sub-card" style="overflow:hidden; max-height:280px">
+            <div class="sub-card-title" style="margin-bottom:10px; font-size:0.7rem">📡 Movimientos por canal (mes)</div>
+            <div style="height:180px; position:relative; width:100%">
+              <canvas id="chart-canal-${idx}" style="max-height:180px"></canvas>
+            </div>
+          </div>
+          <!-- Gráfico 4: Volumen por tipo -->
+          <div class="sub-card" style="overflow:hidden; max-height:280px">
+            <div class="sub-card-title" style="margin-bottom:10px; font-size:0.7rem">💰 Volumen ($) por tipo de operación</div>
+            <div style="height:180px; position:relative; width:100%">
+              <canvas id="chart-vol-${idx}" style="max-height:180px"></canvas>
+            </div>
+          </div>
+        </div>
+      `;
+      panelsEl.appendChild(panel);
+
+      // Renderizar gráficos del panel (diferido para que el DOM esté listo)
+      setTimeout(() => renderGraficosSucursal(suc, idx), 60);
+    });
+
+    // ── Gráficos comparativos globales ────────────────────────────────────
+    setTimeout(() => {
+      const labels  = datos.map(d => d.sucursal);
+      const mesTots = datos.map(d => d.mes.total);
+      const volTots  = datos.map(d =>
+        Object.values(d.mes.volumen_tipo).reduce((a, b) => a + b, 0));
+
+      mkChart('chart-comparativo-mes', 'bar', {
+        labels,
+        datasets: [{
+          label: 'Movimientos',
+          data: mesTots,
+          backgroundColor: datos.map((_, i) => COLORES_SUCURSAL[i]?.fondo || 'rgba(200,200,200,0.4)'),
+          borderColor:     datos.map((_, i) => COLORES_SUCURSAL[i]?.borde || '#888'),
+          borderWidth: 2,
+        }]
+      }, { plugins: { legend: { display: false } } });
+
+      mkChart('chart-comparativo-volumen', 'bar', {
+        labels,
+        datasets: [{
+          label: 'Volumen $',
+          data: volTots,
+          backgroundColor: datos.map((_, i) => COLORES_SUCURSAL[i]?.fondo || 'rgba(200,200,200,0.4)'),
+          borderColor:     datos.map((_, i) => COLORES_SUCURSAL[i]?.borde || '#888'),
+          borderWidth: 2,
+        }]
+      }, {
+        plugins: { legend: { display: false } },
+        scales: {
+          ...CFG_BASE.scales,
+          y: { ...CFG_BASE.scales.y, ticks: { ...CFG_BASE.scales.y.ticks,
+            callback: v => '$' + v.toLocaleString('es-CO') } }
+        }
+      });
+    }, 120);
+  }
+
+  function renderGraficosSucursal(suc, idx) {
+    // Gráfico 1 — Movimientos por día
+    const diasLabels = suc.mes.por_dia.map(d => d.fecha.slice(5)); // MM-DD
+    const diasData   = suc.mes.por_dia.map(d => d.cantidad);
+    const col = COLORES_SUCURSAL[idx] || { borde: '#888', fondo: 'rgba(136,136,136,0.3)' };
+
+    mkChart(`chart-dia-${idx}`, 'line', {
+      labels: diasLabels,
+      datasets: [{
+        label: 'Movimientos',
+        data: diasData,
+        borderColor: col.borde,
+        backgroundColor: col.fondo,
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 3,
+        pointBackgroundColor: col.borde,
+      }]
+    }, { plugins: { legend: { display: false } } });
+
+    // Gráfico 2 — Tipo de operación (pie)
+    const tipoLabels = ['Depósitos', 'Retiros', 'Transferencias'];
+    const tipoData   = [
+      suc.mes.por_tipo.deposito,
+      suc.mes.por_tipo.retiro,
+      suc.mes.por_tipo.transferencia,
+    ];
+    mkChart(`chart-tipo-${idx}`, 'doughnut', {
+      labels: tipoLabels,
+      datasets: [{
+        data: tipoData,
+        backgroundColor: [
+          COLORES_TIPO.deposito.fondo,
+          COLORES_TIPO.retiro.fondo,
+          COLORES_TIPO.transferencia.fondo,
+        ],
+        borderColor: [
+          COLORES_TIPO.deposito.borde,
+          COLORES_TIPO.retiro.borde,
+          COLORES_TIPO.transferencia.borde,
+        ],
+        borderWidth: 2,
+      }]
+    }, {
+      scales: undefined,
+      plugins: {
+        legend: { position: 'bottom', labels: { color: '#888', font: { family: 'Space Mono', size: 9 }, padding: 10 } }
+      }
+    });
+
+    // Gráfico 3 — Canal (barras horizontales)
+    mkChart(`chart-canal-${idx}`, 'bar', {
+      labels: ['Web', 'Móvil', 'Cajero'],
+      datasets: [{
+        label: 'Movimientos',
+        data: [
+          suc.mes.por_canal.web,
+          suc.mes.por_canal.movil,
+          suc.mes.por_canal.cajero,
+        ],
+        backgroundColor: [
+          COLORES_CANAL.web.fondo,
+          COLORES_CANAL.movil.fondo,
+          COLORES_CANAL.cajero.fondo,
+        ],
+        borderColor: [
+          COLORES_CANAL.web.borde,
+          COLORES_CANAL.movil.borde,
+          COLORES_CANAL.cajero.borde,
+        ],
+        borderWidth: 2,
+      }]
+    }, {
+      indexAxis: 'y',
+      plugins: { legend: { display: false } },
+    });
+
+    // Gráfico 4 — Volumen por tipo (barras)
+    mkChart(`chart-vol-${idx}`, 'bar', {
+      labels: ['Depósitos', 'Retiros', 'Transferencias'],
+      datasets: [{
+        label: 'Volumen $',
+        data: [
+          suc.mes.volumen_tipo.deposito,
+          suc.mes.volumen_tipo.retiro,
+          suc.mes.volumen_tipo.transferencia,
+        ],
+        backgroundColor: [
+          COLORES_TIPO.deposito.fondo,
+          COLORES_TIPO.retiro.fondo,
+          COLORES_TIPO.transferencia.fondo,
+        ],
+        borderColor: [
+          COLORES_TIPO.deposito.borde,
+          COLORES_TIPO.retiro.borde,
+          COLORES_TIPO.transferencia.borde,
+        ],
+        borderWidth: 2,
+      }]
+    }, {
+      plugins: { legend: { display: false } },
+      scales: {
+        ...CFG_BASE.scales,
+        y: { ...CFG_BASE.scales.y, ticks: { ...CFG_BASE.scales.y.ticks,
+          callback: v => '$' + Math.round(v).toLocaleString('es-CO') } }
+      }
+    });
+  }
+
+
+  // ══════════════════════════════════════════════════════════════════════
+  // MÓDULO 06 — STATE
+  // ══════════════════════════════════════════════════════════════════════
+  let estadoSeleccionado = null;
+  let _todasCuentasState = [];
+
+  // CSS extra para btn-estado
+  document.head.insertAdjacentHTML('beforeend', `<style>
+    .btn-estado {
+      padding: 9px 12px;
+      background: transparent;
+      border: 1px solid var(--negro5);
+      border-radius: 2px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-transform: uppercase;
+    }
+    .btn-estado:hover { opacity: 0.85; }
+    .btn-estado.activo-sel { box-shadow: 0 0 0 2px currentColor; }
+  </style>`);
+
+  function selEstado(estado, el) {
+    estadoSeleccionado = estado;
+    document.querySelectorAll('.btn-estado').forEach(b => b.classList.remove('activo-sel'));
+    el.classList.add('activo-sel');
+  }
+
+  async function cambiarEstado(btn) {
+    const numero = document.getElementById('state-numero').value.trim();
+    const motivo = document.getElementById('state-motivo').value.trim();
+    if (!numero) { toast('Ingresa el número de cuenta.', 'error'); return; }
+    if (!estadoSeleccionado) { toast('Selecciona un estado destino.', 'error'); return; }
+
+    const r = await api('POST', '/cuentas/estado', {
+      numero_cuenta: numero,
+      nuevo_estado: estadoSeleccionado,
+      motivo: motivo
+    }, btn);
+
+    if (r && r.ok) {
+      toast(r.mensaje, 'success', 'STATE');
+      const d = r.data;
+      const result = document.getElementById('state-consulta-result');
+      result.style.display = 'block';
+      result.innerHTML = `
+        <div style="font-family:'Space Mono',monospace; font-size:0.7rem">
+          <div style="margin-bottom:8px; color:var(--gris)">Transición registrada</div>
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <span style="color:var(--gris)">${d.estado_anterior.toUpperCase()}</span>
+            <span style="color:var(--dorado); font-size:1.2rem">→</span>
+            <span class="estado-badge ${d.color}">${d.estado_nuevo.toUpperCase()}</span>
+          </div>
+          <div style="margin-top:8px; color:var(--gris2); font-size:0.6rem">${d.descripcion}</div>
+        </div>`;
+      // Refrescar panel si está cargado
+      if (_todasCuentasState.length > 0) cargarEstadosCuentas(null);
+    } else if (r) {
+      toast(r.mensaje, 'error', 'STATE');
+    }
+  }
+
+  async function consultarEstado(btn) {
+    const numero = document.getElementById('state-numero').value.trim();
+    if (!numero) { toast('Ingresa el número de cuenta.', 'error'); return; }
+
+    const r = await api('GET', `/cuentas/estado/${numero}`, null, btn);
+    if (!r || !r.ok) { if(r) toast(r.mensaje, 'error'); return; }
+
+    const d = r.data;
+    const p = d.permisos;
+    const result = document.getElementById('state-consulta-result');
+    result.style.display = 'block';
+    result.innerHTML = `
+      <div style="font-family:'Space Mono',monospace; font-size:0.7rem">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
+          <span style="color:var(--dorado); font-size:0.85rem">Cuenta ${d.numero}</span>
+          <span class="estado-badge ${d.color}">${d.estado.toUpperCase()}</span>
+        </div>
+        <div style="color:var(--gris2); margin-bottom:10px; font-size:0.6rem">${d.descripcion}</div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap">
+          <span class="perm-chip ${p.depositar.permitido ? 'perm-ok' : 'perm-no'}">
+            ${p.depositar.permitido ? '✓' : '✗'} Depósito
+          </span>
+          <span class="perm-chip ${p.retirar.permitido ? 'perm-ok' : 'perm-no'}">
+            ${p.retirar.permitido ? '✓' : '✗'} Retiro
+          </span>
+          <span class="perm-chip ${p.transferir.permitido ? 'perm-ok' : 'perm-no'}">
+            ${p.transferir.permitido ? '✓' : '✗'} Transferencia
+          </span>
+        </div>
+      </div>`;
+  }
+
+  async function cargarEstadosCuentas(btn) {
+    const r = await api('GET', '/cuentas/estados', null, btn);
+    if (!r || !r.ok) { if(r) toast(r.mensaje, 'error'); return; }
+
+    _todasCuentasState = r.data;
+
+    // Contadores
+    const counters = document.getElementById('state-counters');
+    counters.style.display = 'grid';
+    const cnt = { activa: 0, bloqueada: 0, suspendida: 0, cerrada: 0 };
+    r.data.forEach(c => { if (cnt[c.estado] !== undefined) cnt[c.estado]++; });
+    document.getElementById('cnt-activa').textContent     = cnt.activa;
+    document.getElementById('cnt-bloqueada').textContent  = cnt.bloqueada;
+    document.getElementById('cnt-suspendida').textContent = cnt.suspendida;
+    document.getElementById('cnt-cerrada').textContent    = cnt.cerrada;
+
+    // Mostrar filtros
+    document.getElementById('state-filtros').style.display = 'flex';
+
+    // Renderizar tarjetas con filtro activo actual
+    const filtroActivo = document.querySelector('#state-filtros .filtro-btn.activo');
+    const filtro = filtroActivo ? filtroActivo.dataset?.filtro || 'todos' : 'todos';
+    renderTarjetasEstado(_todasCuentasState, filtro);
+  }
+
+  function filtrarEstado(filtro, el) {
+    document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('activo'));
+    el.classList.add('activo');
+    el.dataset.filtro = filtro;
+    renderTarjetasEstado(_todasCuentasState, filtro);
+  }
+
+  function renderTarjetasEstado(cuentas, filtro = 'todos') {
+    const grid = document.getElementById('state-cards-grid');
+    const lista = filtro === 'todos' ? cuentas : cuentas.filter(c => c.estado === filtro);
+
+    if (lista.length === 0) {
+      grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:var(--gris); 
+        font-family:'Space Mono',monospace; font-size:0.7rem; padding:32px">
+        Sin cuentas en estado "${filtro}"</div>`;
+      return;
+    }
+
+    const iconos = { depositar: '⬇', retirar: '⬆', transferir: '↔' };
+
+    grid.innerHTML = lista.map(c => {
+      const permDeposito    = c.estado === 'activa' || c.estado === 'suspendida';
+      const permRetiro      = c.estado === 'activa';
+      const permTransf      = c.estado === 'activa';
+
+      return `
+      <div class="state-card">
+        <div class="state-card-header">
+          <div>
+            <div class="state-card-num"># ${c.numero}</div>
+            <div class="state-card-user">👤 ${c.usuario}</div>
+            <div class="state-card-tipo">${c.tipo.toUpperCase()}</div>
+          </div>
+          <span class="estado-badge ${c.color}">${c.estado.toUpperCase()}</span>
+        </div>
+        <div class="state-card-saldo">$${c.saldo.toLocaleString('es-CO', {minimumFractionDigits:2})}</div>
+        <div class="state-permisos">
+          <span class="perm-chip ${permDeposito ? 'perm-ok' : 'perm-no'}">⬇ Depósito</span>
+          <span class="perm-chip ${permRetiro   ? 'perm-ok' : 'perm-no'}">⬆ Retiro</span>
+          <span class="perm-chip ${permTransf   ? 'perm-ok' : 'perm-no'}">↔ Transfer.</span>
+        </div>
+        <div style="margin-top:10px; border-top:1px solid var(--negro5); padding-top:10px; display:flex; gap:6px; flex-wrap:wrap">
+          <button onclick="accionRapida('${c.numero}','activa')"     class="btn btn-dorado"  style="font-size:0.6rem; padding:5px 10px; width:auto; margin-top:0">✅ Activar</button>
+          <button onclick="accionRapida('${c.numero}','bloqueada')"  class="btn btn-outline" style="font-size:0.6rem; padding:5px 10px; width:auto; margin-top:0; border-color:#c0392b; color:#e74c3c">🔒 Bloquear</button>
+          <button onclick="accionRapida('${c.numero}','suspendida')" class="btn btn-outline" style="font-size:0.6rem; padding:5px 10px; width:auto; margin-top:0; border-color:#d35400; color:#e67e22">⏸ Suspender</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  async function accionRapida(numero, nuevoEstado) {
+    const motivos = {
+      bloqueada:  'Bloqueada desde panel de administración',
+      suspendida: 'Suspendida para revisión administrativa',
+      activa:     ''
+    };
+    const r = await api('POST', '/cuentas/estado', {
+      numero_cuenta: numero,
+      nuevo_estado:  nuevoEstado,
+      motivo:        motivos[nuevoEstado] || ''
+    }, null);
+    if (r && r.ok) {
+      toast(`Cuenta ${numero} → ${nuevoEstado.toUpperCase()}`, 'success', 'STATE');
+      cargarEstadosCuentas(null);
+    } else if (r) {
+      toast(r.mensaje, 'error', 'STATE');
+    }
+  }
+
+
+  // ══════════════════════════════════════════════════════════════════════
+  // MÓDULO 07 — STRATEGY · PRÉSTAMOS
+  // ══════════════════════════════════════════════════════════════════════
+  let _tipoInteresSel = 'fijo';
+
+  function selTipo(tipo, el) {
+    _tipoInteresSel = tipo;
+    document.querySelectorAll('.tipo-card').forEach(c => c.classList.remove('sel'));
+    el.classList.add('sel');
+    // Actualizar simulador si ya está visible
+    if (document.getElementById('simulador-box').classList.contains('visible')) {
+      simularPrestamo(null);
+    }
+  }
+
+  function cop(n) {
+    return '$' + Number(n).toLocaleString('es-CO', { minimumFractionDigits: 2 });
+  }
+
+  async function simularPrestamo(btn) {
+    const monto     = parseFloat(document.getElementById('prest-monto').value);
+    const cuotas    = parseInt(document.getElementById('prest-cuotas').value);
+    const tasa      = parseFloat(document.getElementById('prest-tasa').value);
+
+    if (!monto || !cuotas || !tasa) { toast('Completa monto, cuotas y tasa para simular.', 'error'); return; }
+
+    const r = await api('POST', '/prestamos/comparar', { monto, num_cuotas: cuotas, tasa_anual: tasa }, btn);
+    if (!r || !r.ok) return;
+
+    const estrategia = r.data.find(e => e.tipo === _tipoInteresSel);
+    document.getElementById('sim-estrategia').textContent = estrategia.nombre;
+    document.getElementById('sim-monto').textContent      = cop(monto);
+    document.getElementById('sim-cuota').textContent      = cop(estrategia.cuota_mensual);
+    document.getElementById('sim-intereses').textContent  = cop(estrategia.total_intereses);
+    document.getElementById('sim-total').textContent      = cop(estrategia.total_a_pagar);
+    document.getElementById('simulador-box').classList.add('visible');
+
+    // Comparación de ambas estrategias
+    const colores = { fijo: '#6495ed', variable: '#e67e22' };
+    document.getElementById('sim-comparacion').innerHTML = r.data.map(e => `
+      <div style="display:flex; justify-content:space-between; align-items:center;
+           padding:6px 8px; margin-bottom:4px; background:var(--negro4); border-radius:2px;
+           border-left:3px solid ${colores[e.tipo]}">
+        <span style="font-family:'Space Mono',monospace; font-size:.62rem; color:#ccc">${e.nombre}</span>
+        <span style="font-family:'Space Mono',monospace; font-size:.68rem; color:${colores[e.tipo]}">
+          ${cop(e.cuota_mensual)}/mes · Int: ${cop(e.total_intereses)}
+        </span>
+      </div>`).join('');
+  }
+
+  async function crearPrestamo(btn) {
+    const doc     = document.getElementById('prest-doc').value.trim();
+    const cuenta  = document.getElementById('prest-cuenta').value.trim();
+    const monto   = parseFloat(document.getElementById('prest-monto').value);
+    const cuotas  = parseInt(document.getElementById('prest-cuotas').value);
+    const tasa    = parseFloat(document.getElementById('prest-tasa').value);
+
+    if (!doc || !cuenta || !monto || !cuotas || !tasa) {
+      toast('Completa todos los campos del préstamo.', 'error'); return;
+    }
+
+    const r = await api('POST', '/prestamos/crear', {
+      documento: doc, numero_cuenta: cuenta,
+      monto, num_cuotas: cuotas, tasa_anual: tasa,
+      tipo_interes: _tipoInteresSel
+    }, btn);
+
+    if (r && r.ok) {
+      toast(`Préstamo ${r.data.id} creado. ${cop(monto)} acreditados en cuenta ${cuenta}.`, 'success');
+      // Limpiar
+      ['prest-doc','prest-cuenta','prest-monto','prest-cuotas','prest-tasa'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      document.getElementById('simulador-box').classList.remove('visible');
+      cargarPrestamos(null);
+    } else if (r) {
+      toast(r.mensaje, 'error');
+    }
+  }
+
+  // Auto-refresh de la tabla de préstamos
+  let _prestamosTimer = null;
+
+  function iniciarAutoRefreshPrestamos() {
+    detenerAutoRefreshPrestamos();
+    _prestamosTimer = setInterval(() => cargarPrestamos(null), 8000); // cada 8 segundos
+  }
+
+  function detenerAutoRefreshPrestamos() {
+    if (_prestamosTimer) { clearInterval(_prestamosTimer); _prestamosTimer = null; }
+  }
+
+  async function cargarPrestamos(btn) {
+    const r = await api('GET', '/prestamos', null, btn);
+    if (!r || !r.ok) return;
+
+    const tbody = document.getElementById('tbody-prestamos');
+    if (!r.data.length) {
+      tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;color:var(--gris);padding:20px">Sin préstamos registrados.</td></tr>`;
+      // Actualizar contador header
+      actualizarHeaderPrestamos([]);
+      return;
+    }
+
+    const estadoClass = { activo:'badge-activo', pagado:'badge-pagado', vencido:'badge-vencido' };
+    const tipoClass   = { fijo:'badge-fijo', variable:'badge-variable' };
+
+    tbody.innerHTML = r.data.map(p => {
+      const pagado    = p.total_pagado || 0;
+      const pendiente = Math.max(0, p.total_a_pagar - pagado);
+      const pct       = Math.min(100, Math.round((pagado / p.total_a_pagar) * 100));
+      const colorPend = pendiente <= 0 ? '#4caf50' : '#e67e22';
+      const colorBarra = pct >= 100 ? '#4caf50' : pct >= 50 ? '#d4a017' : '#e74c3c';
+
+      return `
+      <tr>
+        <td style="color:var(--dorado); font-weight:700; font-family:'Space Mono',monospace">${p.id}</td>
+        <td>${p.nombre_usuario}<br><span style="color:var(--gris); font-size:.58rem">${p.documento}</span></td>
+        <td style="font-family:'Space Mono',monospace">${p.numero_cuenta}</td>
+        <td>${cop(p.monto)}</td>
+        <td><span class="badge-prest ${tipoClass[p.tipo_interes]}">${p.nombre_interes}</span></td>
+        <td style="color:var(--dorado2)">${cop(p.cuota_mensual)}</td>
+        <td style="color:#e67e22">${cop(p.total_intereses)}</td>
+        <td style="color:var(--dorado3)">${cop(p.total_a_pagar)}</td>
+        <td>
+          <div style="font-family:'Space Mono',monospace; font-size:.7rem; color:#4caf50; font-weight:700; margin-bottom:4px">
+            ${cop(pagado)}
+          </div>
+          <div style="background:var(--negro4); border-radius:2px; height:5px; width:100%; min-width:80px">
+            <div style="height:5px; border-radius:2px; width:${pct}%; background:${colorBarra}; transition:width .4s ease"></div>
+          </div>
+          <div style="font-family:'Space Mono',monospace; font-size:.55rem; color:var(--gris); margin-top:2px; text-align:right">
+            ${pct}% pagado
+          </div>
+        </td>
+        <td style="color:${colorPend}; font-family:'Space Mono',monospace; font-size:.7rem; font-weight:600">
+          ${cop(pendiente)}
+        </td>
+        <td style="text-align:center; font-family:'Space Mono',monospace">${p.cuotas_pagadas}/${p.num_cuotas}</td>
+        <td><span class="badge-prest ${estadoClass[p.estado] || ''}">${p.estado.toUpperCase()}</span></td>
+        <td style="color:var(--gris); font-size:.58rem">${p.fecha_creacion.split(' ')[0]}</td>
+      </tr>`;
+    }).join('');
+
+    actualizarHeaderPrestamos(r.data);
+
+    // Arrancar auto-refresh si aún no está corriendo
+    if (!_prestamosTimer) iniciarAutoRefreshPrestamos();
+  }
+
+  function actualizarHeaderPrestamos(data) {
+    const el = document.getElementById('prest-header-stats');
+    if (!el) return;
+    const total    = data.length;
+    const activos  = data.filter(p => p.estado === 'activo').length;
+    const pagados  = data.filter(p => p.estado === 'pagado').length;
+    const totalPag = data.reduce((s, p) => s + (p.total_pagado || 0), 0);
+    el.innerHTML = `
+      <span style="color:var(--gris)">Total: <span style="color:var(--blanco)">${total}</span></span>
+      &nbsp;·&nbsp;
+      <span style="color:var(--gris)">Activos: <span style="color:#4caf50">${activos}</span></span>
+      &nbsp;·&nbsp;
+      <span style="color:var(--gris)">Pagados: <span style="color:var(--dorado2)">${pagados}</span></span>
+      &nbsp;·&nbsp;
+      <span style="color:var(--gris)">Recaudado: <span style="color:var(--dorado3)">${cop(totalPag)}</span></span>`;
+  }
+
+  function toggleAutoRefresh(btn) {
+    if (_prestamosTimer) {
+      detenerAutoRefreshPrestamos();
+      btn.textContent = '⏵ Activar en vivo';
+      btn.style.borderColor = '';
+      btn.style.color = '';
+      document.getElementById('prest-live-dot').style.display = 'none';
+    } else {
+      cargarPrestamos(null);
+      iniciarAutoRefreshPrestamos();
+      btn.textContent = '⏹ Detener en vivo';
+      btn.style.borderColor = 'var(--verde-c)';
+      btn.style.color = 'var(--verde-c)';
+      document.getElementById('prest-live-dot').style.display = 'flex';
+    }
+  }
+
+  async function buscarPrestamoPago(btn) {
+    const id = document.getElementById('pago-id').value.trim().toUpperCase();
+    if (!id) { toast('Ingresa el ID del préstamo.', 'error'); return; }
+
+    const r = await api('GET', '/prestamos', null, btn);
+    if (!r || !r.ok) return;
+
+    const p = r.data.find(x => x.id === id);
+    if (!p) { toast(`Préstamo ${id} no encontrado.`, 'error'); return; }
+
+    // Mostrar info
+    const estadoClass = { activo:'badge-activo', pagado:'badge-pagado', vencido:'badge-vencido' };
+    document.getElementById('pi-usuario').textContent = `${p.nombre_usuario} (${p.documento})`;
+    // Calcular monto real a cobrar en el frontend (espejo de calcular_monto_real_cuota)
+    const cubierto_formal = p.cuota_mensual * p.cuotas_pagadas;
+    const excedente       = Math.max(0, (p.total_pagado || 0) - cubierto_formal);
+    const monto_real_ui   = Math.max(0, p.cuota_mensual - excedente);
+    const cuotaLabel = monto_real_ui < p.cuota_mensual
+      ? `${cop(p.cuota_mensual)} <span style="color:var(--dorado2)">→ a cobrar: ${monto_real_ui === 0 ? 'Sin cargo' : cop(monto_real_ui)}</span>`
+      : cop(p.cuota_mensual);
+    document.getElementById('pi-cuota').innerHTML    = cuotaLabel;
+    document.getElementById('pi-pagadas').textContent = `${p.cuotas_pagadas}/${p.num_cuotas}`;
+    document.getElementById('pi-estado').innerHTML    =
+      `<span class="badge-prest ${estadoClass[p.estado]}">${p.estado.toUpperCase()}</span>`;
+    document.getElementById('pago-info').style.display = 'block';
+    document.getElementById('pago-resultado').style.display = 'none';
+
+    // Historial de pagos
+    const wrap = document.getElementById('pago-historial-wrap');
+    if (!p.pagos.length) {
+      wrap.innerHTML = `<div style="color:var(--gris); font-family:'Space Mono',monospace; font-size:.65rem; text-align:center; padding:16px">Sin pagos aún.</div>`;
+    } else {
+      wrap.innerHTML = `<div class="pago-historial">` + p.pagos.map(pg => `
+        <div class="pago-item">
+          <span style="color:var(--gris)">${pg.tipo === 'manual' ? '↪ Abono' : '📋 Cuota'} ${pg.numero_cuota}</span>
+          <span style="color:${pg.tipo === 'manual' ? 'var(--dorado2)' : 'var(--verde-c)'}">${cop(pg.monto)}</span>
+          <span style="color:var(--gris2); font-size:.58rem">${pg.fecha}</span>
+        </div>`).join('') + `</div>`;
+    }
+  }
+
+  async function abonarManual(btn) {
+    const id    = document.getElementById('pago-id').value.trim().toUpperCase();
+    const monto = parseFloat(document.getElementById('abono-monto').value);
+    if (!id)          { toast('Ingresa el ID del préstamo.', 'error'); return; }
+    if (!monto || monto <= 0) { toast('Ingresa un monto válido.', 'error'); return; }
+
+    const r = await api('POST', '/prestamos/abonar', { prestamo_id: id, monto }, btn);
+    const res = document.getElementById('pago-resultado');
+    res.style.display = 'block';
+
+    if (r && r.ok) {
+      const d = r.data;
+      res.style.borderLeft = '3px solid var(--dorado)';
+      res.innerHTML = `
+        <div style="color:var(--dorado2); margin-bottom:8px">✅ Abono registrado</div>
+        <div>Monto abonado: <span style="color:var(--dorado2)">${cop(d.abono.monto)}</span></div>
+        <div>Fecha: <span style="color:var(--blanco)">${d.abono.fecha}</span></div>
+        <div>Total pagado: <span style="color:var(--verde-c)">${cop(d.total_pagado)}</span></div>
+        <div>Pendiente: <span style="color:${d.saldo_pendiente <= 0 ? '#4caf50' : '#e67e22'}">${cop(d.saldo_pendiente)}</span></div>
+        <div>Saldo cuenta: <span style="color:var(--dorado2)">${cop(d.saldo_cuenta)}</span></div>
+        <div>Estado: <span style="color:var(--verde-c)">${d.estado_prestamo.toUpperCase()}</span></div>`;
+      document.getElementById('abono-monto').value = '';
+      toast(r.mensaje, 'success');
+      buscarPrestamoPago(null);
+      cargarPrestamos(null);
+    } else if (r) {
+      res.style.borderLeft = '3px solid var(--rojo-c)';
+      res.innerHTML = `<div style="color:var(--rojo-c)">❌ ${r.mensaje}</div>`;
+      toast(r.mensaje, 'error');
+    }
+  }
+
+  async function pagarCuota(btn) {
+    const id = document.getElementById('pago-id').value.trim().toUpperCase();
+    if (!id) { toast('Ingresa el ID del préstamo.', 'error'); return; }
+
+    const r = await api('POST', '/prestamos/pagar', { prestamo_id: id }, btn);
+    const res = document.getElementById('pago-resultado');
+    res.style.display = 'block';
+
+    if (r && r.ok) {
+      const pg = r.data;
+      res.style.borderLeft = '3px solid var(--verde-c)';
+      const abonosAplicados = pg.abonos_aplicados || 0;
+      const montoCobrado    = pg.monto_cobrado    || 0;
+      res.innerHTML = `
+        <div style="color:var(--verde-c); margin-bottom:8px">✅ Cuota registrada exitosamente</div>
+        <div>Cuota N°: <span style="color:var(--dorado2)">${pg.cuota_pagada.numero_cuota} / ${pg.cuotas_pagadas + pg.cuotas_restantes}</span></div>
+        <div>Valor cuota completa: <span style="color:var(--gris)">${cop(pg.cuota_pagada.monto_cuota || pg.cuota_pagada.monto)}</span></div>
+        ${abonosAplicados > 0 ? `
+        <div style="color:var(--dorado2)">↪ Abonos aplicados: <span>${cop(abonosAplicados)}</span></div>
+        <div style="color:var(--verde-c)">💳 Cobrado real: <span>${montoCobrado === 0 ? 'Sin cargo (cubierto por abonos)' : cop(montoCobrado)}</span></div>
+        ` : `<div>Cobrado: <span style="color:var(--dorado2)">${cop(montoCobrado)}</span></div>`}
+        <div>Fecha: <span style="color:var(--blanco)">${pg.cuota_pagada.fecha}</span></div>
+        <div>Cuotas restantes: <span style="color:var(--blanco)">${pg.cuotas_restantes}</span></div>
+        <div>Total pagado: <span style="color:var(--verde-c)">${cop(pg.total_pagado)}</span></div>
+        <div>Saldo cuenta: <span style="color:var(--dorado2)">${cop(pg.saldo_cuenta)}</span></div>
+        <div>Estado: <span style="color:var(--verde-c)">${pg.estado_prestamo.toUpperCase()}</span></div>`;
+      toast(r.mensaje, 'success');
+      buscarPrestamoPago(null);
+      cargarPrestamos(null);
+    } else if (r) {
+      res.style.borderLeft = '3px solid var(--rojo-c)';
+      res.innerHTML = `<div style="color:var(--rojo-c)">❌ ${r.mensaje}</div>`;
+      toast(r.mensaje, 'error');
+    }
+  }
+
+
+  // ══════════════════════════════════════════════════════════════════════
+  // MÓDULO 05 — COMMAND (sin formulario propio — usa endpoints existentes)
+  // ══════════════════════════════════════════════════════════════════════
+
+  function _copCmd(n) {
+    if (n === undefined || n === null) return '—';
+    return '$' + Number(n).toLocaleString('es-CO', { minimumFractionDigits: 2 });
+  }
+
+  function _actualizarUrPanel(estado) {
+    if (!estado) return;
+    document.getElementById('cmd-cnt-undo').textContent  = `${estado.total_undo} command(s)`;
+    document.getElementById('cmd-cnt-redo').textContent  = `${estado.total_redo} command(s)`;
+    document.getElementById('cmd-last-undo').textContent = estado.ultimo_undo || '—';
+    document.getElementById('cmd-last-redo').textContent = estado.ultimo_redo || '—';
+    document.getElementById('btn-undo').style.opacity    = estado.puede_deshacer   ? '1' : '0.4';
+    document.getElementById('btn-redo').style.opacity    = estado.puede_reejecutar ? '1' : '0.4';
+  }
+
+  async function cmdDeshacer(btn) {
+    const r   = await api('POST', '/command/deshacer', {}, btn);
+    const res = document.getElementById('cmd-resultado');
+    res.style.display = 'block';
+
+    if (r && r.ok) {
+      const d = r.data;
+      res.style.borderLeft = '3px solid #6495ed';
+      res.innerHTML = `
+        <div style="color:#6495ed; margin-bottom:6px">↩ Operación DESHECHA</div>
+        <div>${r.mensaje}</div>
+        ${d.saldo_nuevo !== undefined
+          ? `<div>Saldo resultante: <span style="color:var(--dorado2)">${_copCmd(d.saldo_nuevo)}</span></div>`
+          : ''}
+        ${d.saldo_origen !== undefined
+          ? `<div>Saldo origen: <span style="color:var(--dorado2)">${_copCmd(d.saldo_origen)}</span>
+             &nbsp;|&nbsp; Destino: <span style="color:var(--dorado2)">${_copCmd(d.saldo_destino)}</span></div>`
+          : ''}`;
+      _actualizarUrPanel(d.estado_invoker);
+      cmdCargarHistorial(null);
+      toast(r.mensaje, 'success', 'UNDO');
+    } else if (r) {
+      res.style.borderLeft = '3px solid var(--rojo-c)';
+      res.innerHTML = `<div style="color:var(--rojo-c)">❌ ${r.mensaje}</div>`;
+      toast(r.mensaje, 'error');
+    }
+  }
+
+  async function cmdReejecutar(btn) {
+    const r   = await api('POST', '/command/reejecutar', {}, btn);
+    const res = document.getElementById('cmd-resultado');
+    res.style.display = 'block';
+
+    if (r && r.ok) {
+      const d = r.data;
+      res.style.borderLeft = '3px solid var(--dorado)';
+      res.innerHTML = `
+        <div style="color:var(--dorado2); margin-bottom:6px">↪ Operación REEJECUTADA</div>
+        <div>${r.mensaje}</div>
+        ${d.saldo_nuevo !== undefined
+          ? `<div>Saldo resultante: <span style="color:var(--verde-c)">${_copCmd(d.saldo_nuevo)}</span></div>`
+          : ''}
+        ${d.saldo_origen !== undefined
+          ? `<div>Saldo origen: <span style="color:var(--verde-c)">${_copCmd(d.saldo_origen)}</span>
+             &nbsp;|&nbsp; Destino: <span style="color:var(--verde-c)">${_copCmd(d.saldo_destino)}</span></div>`
+          : ''}`;
+      _actualizarUrPanel(d.estado_invoker);
+      cmdCargarHistorial(null);
+      toast(r.mensaje, 'success', 'REDO');
+    } else if (r) {
+      res.style.borderLeft = '3px solid var(--rojo-c)';
+      res.innerHTML = `<div style="color:var(--rojo-c)">❌ ${r.mensaje}</div>`;
+      toast(r.mensaje, 'error');
+    }
+  }
+
+  async function cmdLimpiar(btn) {
+    const r = await api('POST', '/command/limpiar', {}, btn);
+    if (r && r.ok) {
+      _actualizarUrPanel({
+        total_undo:0, total_redo:0,
+        puede_deshacer:false, puede_reejecutar:false,
+        ultimo_undo:null, ultimo_redo:null
+      });
+      cmdCargarHistorial(null);
+      document.getElementById('cmd-resultado').style.display = 'none';
+      toast('Historial limpiado.', 'success');
+    }
+  }
+
+  async function cmdCargarHistorial(btn) {
+    const r = await api('GET', '/command/historial', null, btn);
+    if (!r || !r.ok) return;
+
+    _actualizarUrPanel(r.data.estado);
+
+    const tbody = document.getElementById('tbody-commands');
+    if (!r.data.historial.length) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--gris);padding:20px">
+        Sin commands en historial. Ejecuta operaciones desde los módulos anteriores.</td></tr>`;
+      return;
+    }
+
+    const iconos  = { deposito:'⬇', retiro:'⬆', transferencia:'↔' };
+    const colores = { deposito:'var(--verde-c)', retiro:'var(--rojo-c)', transferencia:'var(--dorado2)' };
+
+    tbody.innerHTML = [...r.data.historial].reverse().map(cmd => {
+      const cuentas = cmd.tipo === 'transferencia'
+        ? `${cmd.origen} → ${cmd.destino}`
+        : (cmd.cuenta || '—');
+      return `<tr>
+        <td style="color:var(--gris); font-family:'Space Mono',monospace">#${cmd.secuencia}</td>
+        <td style="color:${colores[cmd.tipo]||'var(--blanco)'}; font-family:'Space Mono',monospace">
+          ${iconos[cmd.tipo]||''} ${cmd.tipo.toUpperCase()}
+        </td>
+        <td style="font-family:'Space Mono',monospace; font-size:.6rem">${cuentas}</td>
+        <td style="color:var(--dorado2); font-family:'Space Mono',monospace">${_copCmd(cmd.monto)}</td>
+        <td style="color:var(--gris); font-size:.6rem">${(cmd.canal||'—').toUpperCase()}</td>
+        <td><span style="font-family:'Space Mono',monospace; font-size:.6rem;
+             color:${cmd.ejecutado ? 'var(--verde-c)' : '#6495ed'}">
+          ${cmd.ejecutado ? '● ACTIVO' : '○ DESHECHO'}
+        </span></td>
+        <td><span class="cmd-stack-badge ${cmd.en_stack==='undo'?'cmd-undo':'cmd-redo'}">
+          ${cmd.en_stack==='undo'?'UNDO':'REDO'}
+        </span></td>
+        <td style="color:var(--gris); font-size:.58rem">${cmd.fecha||'—'}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Actualizar panel Command cuando se ejecutan operaciones desde otros módulos
+  // Se llama desde las funciones existentes al recibir estado_invoker en la respuesta
+  function _syncCommandPanel(estado_invoker) {
+    if (estado_invoker) _actualizarUrPanel(estado_invoker);
+  }
+
+  // ══════════════════════════════════════════════════════════════════════
+  // MÓDULO 12 — MEMENTO
+  // ══════════════════════════════════════════════════════════════════════
+
+  function cop(n) {
+    if (n === undefined || n === null) return '—';
+    return '$' + Number(n).toLocaleString('es-CO', { minimumFractionDigits: 2 });
+  }
+
+  async function memVerHistorial(btn) {
+    const num = document.getElementById('mem-cuenta').value.trim();
+    if (!num) { toast('Ingresa el número de cuenta.', 'error'); return; }
+
+    const r = await api('GET', `/cuentas/estado/historial/${num}`, null, btn);
+    if (!r || !r.ok) { toast(r ? r.mensaje : 'Error', 'error'); return; }
+
+    const d = r.data;
+    const wrap = document.getElementById('mem-historial-wrap');
+    wrap.style.display = 'block';
+
+    document.getElementById('mem-snapshot-badge').textContent =
+      `${d.total_snapshots} snapshot${d.total_snapshots !== 1 ? 's' : ''}`;
+
+    const lista = document.getElementById('mem-historial-lista');
+    if (!d.historial.length) {
+      lista.innerHTML = `<div style="color:var(--gris2); font-family:'Space Mono',monospace; font-size:.65rem; text-align:center; padding:16px;">Sin snapshots. Cambia el estado de la cuenta para generar snapshots.</div>`;
+    } else {
+      const colorMap = { activa:'var(--verde-c)', bloqueada:'var(--rojo-c)', suspendida:'var(--naranja)', cerrada:'var(--gris)' };
+      lista.innerHTML = [...d.historial].reverse().map((s, i) => `
+        <div class="mem-item">
+          <span style="color:var(--gris2); min-width:20px">#${d.historial.length - i}</span>
+          <span style="color:${colorMap[s.estado]||'var(--blanco)'}; text-transform:uppercase; font-weight:700">${s.estado}</span>
+          <span class="mem-arrow">←</span>
+          <span style="color:var(--gris); flex:1">${s.motivo || 'sin motivo'}</span>
+          <span class="mem-fecha">${s.fecha}</span>
+        </div>`).join('');
+    }
+
+    document.getElementById('mem-estado-actual').innerHTML =
+      `Estado actual: <span style="color:var(--dorado2); text-transform:uppercase">${d.estado_actual}</span>
+       &nbsp;|&nbsp; Puede restaurar: <span style="color:${d.puede_restaurar ? 'var(--verde-c)' : 'var(--rojo-c)'}">${d.puede_restaurar ? 'Sí' : 'No'}</span>`;
+
+    toast(`Historial cargado: ${d.total_snapshots} snapshot(s).`, 'exito');
+  }
+
+  async function memRestaurar(btn) {
+    const num = document.getElementById('mem-rest-cuenta').value.trim();
+    if (!num) { toast('Ingresa el número de cuenta.', 'error'); return; }
+
+    const r = await api('POST', '/cuentas/estado/restaurar', { numero_cuenta: num }, btn);
+    const res = document.getElementById('mem-resultado');
+    res.style.display = 'block';
+
+    if (r && r.ok) {
+      const d = r.data;
+      res.style.borderLeft = '3px solid var(--verde-c)';
+      res.innerHTML = `
+        <div style="color:var(--verde-c); margin-bottom:8px; font-size:.75rem">✅ Estado restaurado</div>
+        <div>Estado anterior: <span style="color:var(--rojo-c); text-transform:uppercase">${d.estado_anterior}</span></div>
+        <div>Estado restaurado: <span style="color:var(--verde-c); text-transform:uppercase">${d.estado_restaurado}</span></div>
+        <div>Snapshot del: <span style="color:var(--gris)">${d.snapshot_fecha}</span></div>
+        <div>Snapshots restantes: <span style="color:var(--dorado2)">${d.snapshots_restantes}</span></div>`;
+      toast(r.mensaje, 'exito');
+      // Sincronizar historial si la cuenta es la misma
+      if (document.getElementById('mem-cuenta').value.trim() === num) {
+        memVerHistorial(null);
+      }
+    } else if (r) {
+      res.style.borderLeft = '3px solid var(--rojo-c)';
+      res.innerHTML = `<div style="color:var(--rojo-c)">❌ ${r.mensaje}</div>`;
+      toast(r.mensaje, 'error');
+    }
+  }
+
+
+  // ══════════════════════════════════════════════════════════════════════
+  // MÓDULO 13 — CHAIN OF RESPONSIBILITY
+  // ══════════════════════════════════════════════════════════════════════
+
+  function chainToggleDestino() {
+    const tipo = document.getElementById('chain-tipo').value;
+    document.getElementById('chain-destino-wrap').style.display =
+      tipo === 'transferencia' ? 'block' : 'none';
+  }
+
+  function chainRenderPasos(pasos) {
+    const colorMap = { ValidadorEstadoCuenta:0, ValidadorSaldo:1, ValidadorLimiteCanal:2, ValidadorFrecuencia:3, ValidadorCuentaDestino:4 };
+    const nombres  = ['ValidadorEstadoCuenta','ValidadorSaldo','ValidadorLimiteCanal','ValidadorFrecuencia','ValidadorCuentaDestino'];
+    const ejecutados = new Set(pasos.map(p => p.handler));
+
+    document.getElementById('chain-pasos').innerHTML = nombres.map(nombre => {
+      const paso = pasos.find(p => p.handler === nombre);
+      if (!paso) {
+        return `<div class="chain-paso pending"><span class="chain-icono">○</span><span class="chain-nombre">${nombre}</span><span class="chain-msg">No alcanzado</span></div>`;
+      }
+      const cls   = paso.aprobado ? 'ok' : 'fail';
+      const icono = paso.aprobado ? '✅' : '❌';
+      return `<div class="chain-paso ${cls}"><span class="chain-icono">${icono}</span><span class="chain-nombre">${nombre}</span><span class="chain-msg">${paso.mensaje}</span></div>`;
+    }).join('');
+  }
+
+  async function chainValidar(btn) {
+    const cuenta  = document.getElementById('chain-cuenta').value.trim();
+    const monto   = parseFloat(document.getElementById('chain-monto').value);
+    const tipo    = document.getElementById('chain-tipo').value;
+    const canal   = document.getElementById('chain-canal').value;
+    const destino = document.getElementById('chain-destino').value.trim();
+
+    if (!cuenta || !monto) { toast('Completa cuenta y monto.', 'error'); return; }
+
+    const body = { numero_cuenta: cuenta, monto, tipo, canal };
+    if (destino) body.numero_destino = destino;
+
+    const r = await api('POST', '/validacion/transaccion', body, btn);
+    if (!r) return;
+
+    chainRenderPasos(r.data ? r.data.pasos || [] : []);
+
+    const res = document.getElementById('chain-resumen');
+    res.style.display = 'block';
+    document.getElementById('chain-exec-resultado').style.display = 'none';
+
+    if (r.ok && r.data) {
+      const d = r.data;
+      res.className = `chain-resumen ${d.aprobado ? 'aprobado' : 'rechazado'}`;
+      res.innerHTML = d.aprobado
+        ? `✅ Cadena APROBADA — ${d.total_pasos} eslabones verificados`
+        : `❌ Cadena RECHAZADA en: <strong>${d.rechazado_por}</strong>`;
+      toast(r.mensaje, d.aprobado ? 'exito' : 'error');
+    }
+  }
+
+  async function chainEjecutar(btn) {
+    const cuenta  = document.getElementById('chain-cuenta').value.trim();
+    const monto   = parseFloat(document.getElementById('chain-monto').value);
+    const tipo    = document.getElementById('chain-tipo').value;
+    const canal   = document.getElementById('chain-canal').value;
+    const destino = document.getElementById('chain-destino').value.trim();
+
+    if (!cuenta || !monto) { toast('Completa cuenta y monto.', 'error'); return; }
+
+    const body = { numero_cuenta: cuenta, monto, tipo, canal };
+    if (destino) body.numero_destino = destino;
+
+    const r = await api('POST', '/validacion/ejecutar', body, btn);
+    if (!r) return;
+
+    const d = r.data;
+    if (d && d.validacion) chainRenderPasos(d.validacion.pasos || []);
+
+    const res = document.getElementById('chain-resumen');
+    res.style.display = 'block';
+
+    if (d && d.validacion) {
+      res.className = `chain-resumen ${d.validacion.aprobado ? 'aprobado' : 'rechazado'}`;
+      res.innerHTML = d.validacion.aprobado
+        ? `✅ Cadena APROBADA — ${d.validacion.total_pasos} eslabones verificados`
+        : `❌ Cadena RECHAZADA en: <strong>${d.validacion.rechazado_por}</strong>`;
+    }
+
+    const exec = document.getElementById('chain-exec-resultado');
+    exec.style.display = 'block';
+
+    if (d && d.ejecutado) {
+      exec.style.borderLeft = '3px solid var(--verde-c)';
+      exec.innerHTML = `
+        <div style="color:var(--verde-c); margin-bottom:6px">▶ Operación EJECUTADA</div>
+        <div>Saldo actual: <span style="color:var(--dorado2)">${cop(d.saldo_actual)}</span></div>`;
+      toast(r.mensaje, 'exito');
+      if (d.estado_invoker) _actualizarUrPanel(d.estado_invoker);
+    } else {
+      exec.style.borderLeft = '3px solid var(--rojo-c)';
+      exec.innerHTML = `<div style="color:var(--rojo-c)">❌ ${r.mensaje}</div>`;
+      toast(r.mensaje, 'error');
+    }
+  }
+
+
+  // ══════════════════════════════════════════════════════════════════════
+  // MÓDULO 14 — TEMPLATE METHOD (REPORTES)
+  // ══════════════════════════════════════════════════════════════════════
+
+  let repTipoSel = 'movimientos';
+
+  function repSelTipo(card) {
+    document.querySelectorAll('.reporte-tipo-card').forEach(c => c.classList.remove('sel'));
+    card.classList.add('sel');
+    repTipoSel = card.dataset.tipo;
+
+    // Mostrar/ocultar parámetros según tipo
+    document.getElementById('rep-param-cuenta').style.display = repTipoSel === 'movimientos' ? 'block' : 'none';
+    document.getElementById('rep-param-doc').style.display    = ['prestamos','usuario'].includes(repTipoSel) ? 'block' : 'none';
+    document.getElementById('rep-param-suc').style.display    = repTipoSel === 'sucursal' ? 'block' : 'none';
+  }
+
+  function _repKpi(num, label, color) {
+    return `<div class="rep-kpi"><div class="rep-kpi-num" style="color:${color||'var(--dorado2)'}">${num}</div><div class="rep-kpi-label">${label}</div></div>`;
+  }
+
+  function _repRenderMovimientos(d) {
+    document.getElementById('rep-titulo').textContent = `Reporte Movimientos · Cuenta ${d.numero_cuenta} · ${d.periodo_dias} días`;
+    document.getElementById('rep-kpis').innerHTML =
+      _repKpi(cop(d.saldo_actual), 'Saldo Actual', 'var(--verde-c)') +
+      _repKpi(d.total_registros, 'Movimientos', 'var(--dorado2)') +
+      _repKpi(d.por_tipo.deposito, 'Depósitos') +
+      _repKpi(d.por_tipo.retiro, 'Retiros', 'var(--rojo-c)') +
+      _repKpi(d.por_tipo.transferencia, 'Transferencias', 'var(--azul)');
+
+    document.getElementById('rep-tabla-titulo').textContent = 'Últimos movimientos';
+    const movs = d.movimientos || [];
+    if (!movs.length) { document.getElementById('rep-tabla').innerHTML = '<p style="color:var(--gris); font-family:Space Mono,monospace; font-size:.65rem">Sin movimientos en el período.</p>'; return; }
+    const color = { deposito:'var(--verde-c)', retiro:'var(--rojo-c)', transferencia:'var(--dorado2)' };
+    document.getElementById('rep-tabla').innerHTML = `<table>
+      <thead><tr><th>Fecha</th><th>Tipo</th><th>Monto</th><th>Canal</th><th>Saldo Final</th></tr></thead>
+      <tbody>${[...movs].reverse().map(m => `<tr>
+        <td style="color:var(--gris); font-size:.58rem">${m.fecha}</td>
+        <td style="color:${color[m.tipo]||'var(--blanco)'}; text-transform:uppercase">${m.tipo}</td>
+        <td style="color:var(--dorado2)">${cop(m.monto)}</td>
+        <td style="color:var(--gris)">${(m.canal||'').toUpperCase()}</td>
+        <td>${cop(m.saldo_final)}</td>
+      </tr>`).join('')}</tbody></table>`;
+  }
+
+  function _repRenderPrestamos(d) {
+    document.getElementById('rep-titulo').textContent = `Reporte Préstamos · ${d.nombre_usuario}`;
+    document.getElementById('rep-kpis').innerHTML =
+      _repKpi(d.total_registros, 'Total Préstamos') +
+      _repKpi(d.prestamos_activos, 'Activos', 'var(--verde-c)') +
+      _repKpi(d.prestamos_pagados, 'Pagados', 'var(--dorado2)') +
+      _repKpi(cop(d.total_pagado), 'Pagado', 'var(--verde-c)') +
+      _repKpi(cop(d.total_pendiente), 'Pendiente', 'var(--rojo-c)');
+
+    document.getElementById('rep-tabla-titulo').textContent = 'Detalle de préstamos';
+    const lista = d.prestamos || [];
+    if (!lista.length) { document.getElementById('rep-tabla').innerHTML = '<p style="color:var(--gris); font-family:Space Mono,monospace; font-size:.65rem">Sin préstamos en el período.</p>'; return; }
+    document.getElementById('rep-tabla').innerHTML = `<table>
+      <thead><tr><th>ID</th><th>Monto</th><th>Cuota</th><th>Cuotas</th><th>Tipo</th><th>Estado</th></tr></thead>
+      <tbody>${lista.map(p => `<tr>
+        <td style="color:var(--dorado)">${p.id}</td>
+        <td>${cop(p.monto)}</td>
+        <td style="color:var(--dorado2)">${cop(p.cuota_mensual)}</td>
+        <td style="font-family:'Space Mono',monospace">${p.cuotas_pagadas}/${p.num_cuotas}</td>
+        <td style="color:#6495ed; text-transform:uppercase">${p.tipo_interes}</td>
+        <td style="color:${p.estado==='activo'?'var(--verde-c)':'var(--dorado2)'}; text-transform:uppercase">${p.estado}</td>
+      </tr>`).join('')}</tbody></table>`;
+  }
+
+  function _repRenderSucursal(d) {
+    document.getElementById('rep-titulo').textContent = `Reporte Sucursal · ${d.sucursal} · ${d.periodo_dias} días`;
+    document.getElementById('rep-kpis').innerHTML =
+      _repKpi(cop(d.saldo_total), 'Saldo Total', 'var(--verde-c)') +
+      _repKpi(d.total_cuentas, 'Cuentas') +
+      _repKpi(d.total_registros, 'Movimientos') +
+      _repKpi(d.por_tipo.deposito, 'Depósitos') +
+      _repKpi(d.por_tipo.retiro, 'Retiros', 'var(--rojo-c)');
+
+    document.getElementById('rep-tabla-titulo').textContent = 'Actividad diaria';
+    const dias = d.actividad_diaria || [];
+    if (!dias.length) { document.getElementById('rep-tabla').innerHTML = ''; return; }
+    document.getElementById('rep-tabla').innerHTML = `<table>
+      <thead><tr><th>Fecha</th><th>Cantidad de Movimientos</th></tr></thead>
+      <tbody>${dias.filter(d => d.cantidad > 0).map(d => `<tr>
+        <td style="color:var(--gris)">${d.fecha}</td>
+        <td style="color:var(--dorado2)">${d.cantidad}</td>
+      </tr>`).join('')}</tbody></table>`;
+  }
+
+  function _repRenderUsuario(d) {
+    document.getElementById('rep-titulo').textContent = `Reporte Usuario · ${d.nombre} · ${d.periodo_dias} días`;
+    document.getElementById('rep-kpis').innerHTML =
+      _repKpi(cop(d.saldo_total), 'Saldo Total', 'var(--verde-c)') +
+      _repKpi(d.total_cuentas, 'Cuentas') +
+      _repKpi(d.total_registros, 'Movimientos') +
+      _repKpi(cop(d.volumen_total), 'Volumen', 'var(--dorado2)');
+
+    document.getElementById('rep-tabla-titulo').textContent = 'Cuentas del usuario';
+    const cuentas = d.cuentas || [];
+    document.getElementById('rep-tabla').innerHTML = `<table>
+      <thead><tr><th>Número</th><th>Tipo</th><th>Saldo</th><th>Estado</th><th>Movimientos</th></tr></thead>
+      <tbody>${cuentas.map(c => `<tr>
+        <td style="color:var(--dorado); font-family:'Space Mono',monospace">${c.numero}</td>
+        <td style="text-transform:uppercase; color:var(--gris)">${c.tipo}</td>
+        <td style="color:var(--dorado2)">${cop(c.saldo)}</td>
+        <td style="text-transform:uppercase; color:${c.estado==='activa'?'var(--verde-c)':c.estado==='bloqueada'?'var(--rojo-c)':'var(--naranja)'}">${c.estado}</td>
+        <td style="color:var(--blanco)">${c.movimientos_periodo}</td>
+      </tr>`).join('')}</tbody></table>`;
+  }
+
+  async function generarReporte(btn) {
+    const periodo = parseInt(document.getElementById('rep-periodo').value);
+    const body    = { tipo: repTipoSel, periodo_dias: periodo };
+
+    if (repTipoSel === 'movimientos') {
+      body.numero_cuenta = document.getElementById('rep-numero-cuenta').value.trim();
+      if (!body.numero_cuenta) { toast('Ingresa el número de cuenta.', 'error'); return; }
+    } else if (['prestamos','usuario'].includes(repTipoSel)) {
+      body.documento = document.getElementById('rep-documento').value.trim();
+      if (!body.documento) { toast('Ingresa el documento del usuario.', 'error'); return; }
+    } else if (repTipoSel === 'sucursal') {
+      body.nombre_sucursal = document.getElementById('rep-sucursal').value;
+    }
+
+    const r = await api('POST', '/reportes/generar', body, btn);
+    if (!r || !r.ok) { toast(r ? r.mensaje : 'Error al generar reporte.', 'error'); return; }
+
+    document.getElementById('rep-placeholder').style.display = 'none';
+    const out = document.getElementById('rep-output');
+    out.classList.add('visible');
+
+    const d = r.data;
+    if (repTipoSel === 'movimientos')   _repRenderMovimientos(d);
+    else if (repTipoSel === 'prestamos') _repRenderPrestamos(d);
+    else if (repTipoSel === 'sucursal')  _repRenderSucursal(d);
+    else if (repTipoSel === 'usuario')   _repRenderUsuario(d);
+
+    toast(r.mensaje, 'exito');
+  }
+
+
+  // ── INIT ──────────────────────────────────────────────────────────────────
+  window.addEventListener('DOMContentLoaded', () => {
+    cargarDecoradores();
+  });
+</script>
+
+</body>
+</html>

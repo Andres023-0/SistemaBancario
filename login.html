@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Banco UTS — Acceso</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --negro:    #0a0a0a;
+    --negro2:   #111111;
+    --negro3:   #1a1a1a;
+    --negro4:   #222222;
+    --negro5:   #2e2e2e;
+    --dorado:   #d4a017;
+    --dorado2:  #f0c040;
+    --dorado3:  #ffd966;
+    --dorado-d: #8a6500;
+    --blanco:   #f5f0e8;
+    --gris:     #888888;
+    --gris2:    #555555;
+    --verde-c:  #4caf50;
+    --rojo-c:   #e74c3c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--negro);
+    color: var(--blanco);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  /* fondo texturizado idéntico al principal */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(212,160,23,0.03) 40px, rgba(212,160,23,0.03) 41px),
+      repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(212,160,23,0.03) 40px, rgba(212,160,23,0.03) 41px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* destello diagonal de fondo */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -40%;
+    left: -20%;
+    width: 80%;
+    height: 180%;
+    background: radial-gradient(ellipse at center, rgba(212,160,23,0.04) 0%, transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── LOGO SUPERIOR ───────────────────────────────────────────────── */
+  .logo-wrap {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    margin-bottom: 40px;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .logo-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3.6rem;
+    color: var(--dorado);
+    letter-spacing: 8px;
+    line-height: 1;
+  }
+
+  .logo-sub {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--gris);
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+
+  /* ── CONTENEDOR PANEL DOBLE ─────────────────────────────────────── */
+  .panel-wrap {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    gap: 0;
+    width: 780px;
+    max-width: 96vw;
+    background: var(--negro2);
+    border: 1px solid var(--negro5);
+    border-top: 3px solid var(--dorado);
+    border-radius: 2px;
+    overflow: hidden;
+    animation: fadeUp 0.5s ease 0.15s both;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+  }
+
+  /* línea dorada superior */
+  .panel-wrap::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, var(--dorado), transparent);
+  }
+
+  /* divisor central */
+  .panel-divider {
+    width: 1px;
+    background: var(--negro5);
+    flex-shrink: 0;
+  }
+
+  /* ── PANEL INDIVIDUAL ────────────────────────────────────────────── */
+  .panel {
+    flex: 1;
+    padding: 40px 36px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .panel-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 3px;
+    color: var(--dorado);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .panel-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 3px;
+    color: var(--blanco);
+    margin-bottom: 6px;
+  }
+
+  .panel-desc {
+    font-size: 0.75rem;
+    color: var(--gris);
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+
+  /* ── INPUTS ─────────────────────────────────────────────────────── */
+  .field {
+    margin-bottom: 16px;
+  }
+
+  .field label {
+    display: block;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 2px;
+    color: var(--gris);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .field input {
+    width: 100%;
+    background: var(--negro3);
+    border: 1px solid var(--negro5);
+    border-radius: 2px;
+    color: var(--blanco);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    padding: 11px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .field input:focus { border-color: var(--dorado); }
+  .field input::placeholder { color: var(--gris2); }
+
+  /* icono de ojo para password */
+  .field-pw {
+    position: relative;
+  }
+  .field-pw input { padding-right: 40px; }
+  .eye-btn {
+    position: absolute;
+    right: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--gris);
+    font-size: 1rem;
+    padding: 2px;
+    transition: color 0.2s;
+  }
+  .eye-btn:hover { color: var(--dorado); }
+
+  /* ── BOTÓN PRINCIPAL ─────────────────────────────────────────────── */
+  .btn-login {
+    width: 100%;
+    margin-top: 8px;
+    padding: 13px 24px;
+    background: var(--dorado);
+    color: var(--negro);
+    border: none;
+    border-radius: 2px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-login::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.06);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .btn-login:hover { background: var(--dorado2); }
+  .btn-login:hover::after { opacity: 1; }
+  .btn-login:active { transform: scale(0.98); }
+  .btn-login.loading { opacity: 0.7; pointer-events: none; }
+
+  /* ── MENSAJE DE ERROR ────────────────────────────────────────────── */
+  .login-error {
+    display: none;
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: rgba(192,57,43,0.12);
+    border: 1px solid rgba(231,76,60,0.3);
+    border-radius: 2px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--rojo-c);
+    letter-spacing: 0.5px;
+    animation: shake 0.3s ease;
+  }
+
+  .login-error.visible { display: block; }
+
+  /* ── HINT CREDENCIALES (panel usuario) ──────────────────────────── */
+  .cred-hint {
+    margin-top: 20px;
+    padding: 12px 14px;
+    background: var(--negro3);
+    border: 1px solid var(--negro5);
+    border-left: 3px solid var(--dorado-d);
+    border-radius: 2px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--gris);
+    line-height: 1.8;
+  }
+
+  .cred-hint span { color: var(--dorado2); }
+
+  /* ── CORNER TAG ─────────────────────────────────────────────────── */
+  .corner-tag {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--dorado-d);
+    letter-spacing: 2px;
+  }
+
+  /* ── STATUS DOT ─────────────────────────────────────────────────── */
+  .status-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--gris);
+    margin-bottom: 20px;
+  }
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--verde-c);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* ── ANIMACIONES ────────────────────────────────────────────────── */
+  .btn-salir {
+    padding: 7px 16px; background: transparent; border: 1px solid var(--gris2);
+    border-radius: 2px; color: var(--gris); font-family: 'Space Mono', monospace;
+    font-size: .62rem; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; transition: all .15s;
+  }
+  .btn-salir:hover { border-color: var(--rojo-c); color: var(--rojo-c); }
+
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+    display: flex; justify-content: flex-end; align-items: center;
+    padding: 14px 28px;
+  }
+
+  @keyframes fadeUp   { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-16px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes shake    { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+  /* ── RESPONSIVE ─────────────────────────────────────────────────── */
+  @media (max-width: 640px) {
+    .panel-wrap { flex-direction: column; }
+    .panel-divider { width: 100%; height: 1px; }
+    .panel { padding: 28px 20px; }
+    .logo-text { font-size: 2.6rem; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- LOGO -->
+  <div class="logo-wrap">
+    <div class="logo-text">BANCO UTS</div>
+    <div class="logo-sub">Sistema Bancario Core · Patrones de Diseño</div>
+  </div>
+
+  <!-- PANEL DOBLE -->
+  <div class="panel-wrap">
+    <div class="corner-tag">v2.0 · STATE</div>
+
+    <!-- ══ PANEL ADMINISTRADOR ══════════════════════════════════════ -->
+    <div class="panel">
+      <div class="panel-tag">Acceso restringido</div>
+      <div class="panel-title">Administrador</div>
+      <div class="panel-desc">Panel de control completo del sistema bancario.</div>
+
+      <div class="status-row">
+        <div class="dot"></div>
+        Sistema en línea
+      </div>
+
+      <div class="field">
+        <label>Usuario</label>
+        <input type="text" id="adm-user" placeholder="admin" autocomplete="username">
+      </div>
+
+      <div class="field">
+        <label>Contraseña</label>
+        <div class="field-pw">
+          <input type="password" id="adm-pass" placeholder="••••••••" autocomplete="current-password"
+                 onkeydown="if(event.key==='Enter') loginAdmin()">
+          <button class="eye-btn" onclick="togglePw('adm-pass',this)" tabindex="-1">👁</button>
+        </div>
+      </div>
+
+      <button class="btn-login" onclick="loginAdmin(this)">Ingresar como Administrador</button>
+      <div class="login-error" id="adm-error">Usuario o contraseña incorrectos.</div>
+
+      <div class="cred-hint" style="border-left-color: var(--dorado);">
+        <span>Usuario:</span> admin<br>
+        <span>Contraseña:</span> bancouts2025
+      </div>
+    </div>
+
+    <div class="panel-divider"></div>
+
+    <!-- ══ PANEL USUARIO ════════════════════════════════════════════ -->
+    <div class="panel">
+      <div class="panel-tag">Banca en línea</div>
+      <div class="panel-title">Usuario</div>
+      <div class="panel-desc">Consulta tu cuenta y realiza operaciones bancarias.</div>
+
+      <div class="status-row">
+        <div class="dot"></div>
+        Conexión segura
+      </div>
+
+      <div class="field">
+        <label>Número de cuenta</label>
+        <input type="text" id="usr-cuenta" placeholder="ej: 1001" autocomplete="username">
+      </div>
+
+      <div class="field">
+        <label>Contraseña</label>
+        <div class="field-pw">
+          <input type="password" id="usr-pass" placeholder="••••••••" autocomplete="current-password"
+                 onkeydown="if(event.key==='Enter') loginUsuario()">
+          <button class="eye-btn" onclick="togglePw('usr-pass',this)" tabindex="-1">👁</button>
+        </div>
+      </div>
+
+      <button class="btn-login" onclick="loginUsuario(this)">Ingresar a mi Cuenta</button>
+      <div class="login-error" id="usr-error">Número de cuenta o contraseña incorrectos.</div>
+
+      <div class="cred-hint">
+        Usa tu <span>número de cuenta</span> como usuario.<br>
+        Contraseña: <span>uts + número de cuenta</span><br>
+        Ej: cuenta <span>1001</span> → contraseña <span>uts1001</span>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const API = 'http://127.0.0.1:5000/api';
+
+  // ── Credenciales ──────────────────────────────────────────────────────────
+  const ADMIN_USER = 'admin';
+  const ADMIN_PASS = 'bancouts2025';
+
+  // Contraseña de usuario: "uts" + numero_cuenta
+  function passUsuario(numeroCuenta) {
+    return 'uts' + numeroCuenta;
+  }
+
+  // ── Toggle ojo ────────────────────────────────────────────────────────────
+  function togglePw(id, btn) {
+    const inp = document.getElementById(id);
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+    btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+  }
+
+  // ── Login Admin ───────────────────────────────────────────────────────────
+  function loginAdmin(btn) {
+    const user = document.getElementById('adm-user').value.trim();
+    const pass = document.getElementById('adm-pass').value;
+    const err  = document.getElementById('adm-error');
+
+    if (user === ADMIN_USER && pass === ADMIN_PASS) {
+      err.classList.remove('visible');
+      btn.classList.add('loading');
+      btn.textContent = 'Verificando...';
+      setTimeout(() => {
+        sessionStorage.setItem('bancouts_rol', 'admin');
+        window.location.href = 'banco_uts.html';
+      }, 600);
+    } else {
+      err.classList.add('visible');
+      document.getElementById('adm-pass').value = '';
+      document.getElementById('adm-pass').focus();
+    }
+  }
+
+  // ── Login Usuario ─────────────────────────────────────────────────────────
+  async function loginUsuario(btn) {
+    const numeroCuenta = document.getElementById('usr-cuenta').value.trim();
+    const pass         = document.getElementById('usr-pass').value;
+    const err          = document.getElementById('usr-error');
+
+    if (!numeroCuenta || !pass) {
+      err.textContent = 'Completa todos los campos.';
+      err.classList.add('visible');
+      return;
+    }
+
+    // Validar contraseña local
+    if (pass !== passUsuario(numeroCuenta)) {
+      err.textContent = 'Número de cuenta o contraseña incorrectos.';
+      err.classList.add('visible');
+      document.getElementById('usr-pass').value = '';
+      return;
+    }
+
+    // Verificar que la cuenta exista en la API
+    btn.classList.add('loading');
+    btn.textContent = 'Verificando...';
+    err.classList.remove('visible');
+
+    try {
+      const res  = await fetch(`${API}/cuentas/estado/${numeroCuenta}`);
+      const data = await res.json();
+
+      if (!data.ok) {
+        err.textContent = 'Cuenta no encontrada en el sistema.';
+        err.classList.add('visible');
+        btn.classList.remove('loading');
+        btn.textContent = 'Ingresar a mi Cuenta';
+        return;
+      }
+
+      // Guardar sesión y redirigir
+      sessionStorage.setItem('bancouts_rol',    'usuario');
+      sessionStorage.setItem('bancouts_cuenta', numeroCuenta);
+      window.location.href = 'usuario.html';
+
+    } catch (e) {
+      err.textContent = 'No se pudo conectar con el servidor. Verifique que api.py esté activo.';
+      err.classList.add('visible');
+      btn.classList.remove('loading');
+      btn.textContent = 'Ingresar a mi Cuenta';
+    }
+  }
+</script>
+</body>
+</html>
