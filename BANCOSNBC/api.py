@@ -1,5 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from functools import wraps
 import sys
 import os
@@ -42,6 +44,33 @@ API_KEY      = os.environ.get("API_KEY", "").strip()
 
 app = Flask(__name__)
 CORS(app, origins=CORS_ORIGINS.split(",") if CORS_ORIGINS != "*" else "*")
+
+# =============================================================================
+# FASE 4.3 — RATE LIMITING (protección adicional contra abuso)
+#
+# Independiente de la autenticación (@requiere_api_key / futuro @requiere_login
+# de Fase 3): limita cuántas veces se puede llamar a un endpoint sensible desde
+# la misma IP en una ventana de tiempo, aunque la clave/token sea válido.
+#
+# Sin límites globales por defecto — solo se aplican explícitamente con
+# @limiter.limit(...) en los endpoints que mueven dinero o eliminan datos,
+# para no afectar el resto de la API (lectura de reportes, listados, etc.).
+# =============================================================================
+limiter = Limiter(
+    key_func=get_remote_address,
+    app=app,
+    default_limits=[],
+    storage_uri="memory://",
+)
+
+
+@app.errorhandler(429)
+def limite_excedido(e):
+    return jsonify({
+        "ok":      False,
+        "mensaje": "Demasiadas solicitudes. Intenta de nuevo en unos momentos.",
+        "data":    None,
+    }), 429
 
 
 def requiere_api_key(func):
@@ -237,6 +266,7 @@ def depositar():
 # =============================================================================
 @app.route("/api/operaciones/retirar", methods=["POST"])
 @requiere_api_key
+@limiter.limit("20 per minute")
 def retirar():
     body   = request.get_json(force=True)
     numero = body.get("numero_cuenta", "").strip()
@@ -271,6 +301,7 @@ def retirar():
 # =============================================================================
 @app.route("/api/operaciones/transferir", methods=["POST"])
 @requiere_api_key
+@limiter.limit("20 per minute")
 def transferir():
     body    = request.get_json(force=True)
     origen  = body.get("numero_origen", "").strip()
@@ -549,6 +580,7 @@ def trazabilidad():
 # =============================================================================
 @app.route("/api/usuarios/eliminar", methods=["DELETE"])
 @requiere_api_key
+@limiter.limit("5 per minute")
 def eliminar_usuario():
     body      = request.get_json(force=True)
     documento = body.get("documento", "").strip()
