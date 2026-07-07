@@ -14,6 +14,7 @@ class DetectorFraude:
     def __init__(self):
         config = ConfigBanco.get_instancia()
         self._limite_aml = config.get_limite_aml()
+        self._limite_aml_mensual = config.get_limite_aml_multiples_mes()
         self._max_transacciones = config.get_max_transacciones_ventana()
         self._ventana_minutos = config.get_ventana_tiempo_minutos()
         self._saldo_critico = config.get_saldo_critico()
@@ -29,12 +30,26 @@ class DetectorFraude:
     def evaluar(self, cuenta, monto, canal, tipo_operacion="deposito", cuenta_destino=None):
         alertas = []
 
-        # Regla 1: Monto alto (AML)
+        # Regla 1: Monto alto (AML) — transacción individual
         if monto > self._limite_aml:
             alertas.append(f"Monto excede límite AML (${self._limite_aml:,.0f})")
 
-        # Regla 2: Alta frecuencia
+        # Regla 1.5: Monto alto (AML) — acumulado del cliente en el mes calendario actual
+        # (normativa UIAF: transacciones múltiples del mismo cliente en un mes)
         ahora = datetime.now()
+        mes_actual = ahora.strftime("%Y-%m")
+        acumulado_mes = sum(
+            Decimal(str(t["monto"]))
+            for t in cuenta.transacciones
+            if t["fecha"].startswith(mes_actual)
+        ) + Decimal(str(monto))
+        if acumulado_mes > self._limite_aml_mensual:
+            alertas.append(
+                f"Acumulado mensual del cliente excede límite AML "
+                f"(${self._limite_aml_mensual:,.0f}) — total del mes: ${acumulado_mes:,.0f}"
+            )
+
+        # Regla 2: Alta frecuencia
         trans_recientes = [
             t for t in cuenta.transacciones
             if (ahora - datetime.strptime(t['fecha'], "%Y-%m-%d %H:%M:%S")).total_seconds() / 60 <= self._ventana_minutos
