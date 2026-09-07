@@ -1,0 +1,5 @@
+BANCOSNBC/__pycache__/
+BANCOSNBC/.pytest_cache/
+BANCOSNBC/*.pyc
+BANCOSNBC/banco.db
+BANCOSNBC/venv/
