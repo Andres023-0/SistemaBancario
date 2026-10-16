@@ -1,0 +1,379 @@
+classDiagram
+    direction TB
+
+    %% ========== SINGLETON ==========
+    class ConfigBanco {
+        <<Singleton>>
+        +get_instancia()
+        +get_limite_aml()
+        +get_max_transacciones_ventana()
+        +get_saldo_critico()
+    }
+    class Logger {
+        <<Singleton>>
+        +get_instancia()
+        +log(mensaje, nivel)
+        +get_logs()
+    }
+    class DetectorFraude {
+        <<Singleton>>
+        +get_instancia()
+        +evaluar(cuenta, monto, canal, tipo, destino)
+    }
+    class SucursalesManager {
+        <<Singleton>>
+        +get_instancia()
+        +sucursales
+    }
+    class HistorialComandos {
+        <<Singleton>>
+        +get_instancia()
+        +ejecutar(comando)
+        +deshacer()
+        +reejecutar()
+        +limpiar()
+    }
+    class SesionManager {
+        <<Singleton>>
+        +get_instancia()
+        +crear_sesion(rol, cuenta)
+        +obtener_sesion(token)
+        +cerrar_sesion(token)
+        +validar_admin(usuario, password)
+    }
+
+    ConfigBanco ..> DetectorFraude : configura
+    ConfigBanco ..> SucursalesManager : configura
+    Cuenta ..> Logger : usa
+    OperacionBancaria ..> Logger : usa
+
+    %% ========== COMPOSITE ==========
+    class ComponenteBancario {
+        <<Abstract>>
+        +get_nombre()
+        +get_saldo_total()
+        +listar(nivel)
+    }
+    class Banco {
+        +agregar_usuario(usuario)
+        +buscar_usuario_por_documento(doc)
+        +buscar_cuenta_por_numero(numero)
+    }
+    class Sucursal {
+        +agregar_cuenta(cuenta)
+        +cuentas
+    }
+    class Cuenta {
+        +depositar(monto, canal)
+        +retirar(monto, canal)
+        +transferir(destino, monto, canal)
+        +set_estado(estado)
+        +bloquear(motivo)
+        +suspender(motivo)
+        +activar()
+        +cerrar()
+        +suscribir(observador)
+        +desuscribir(observador)
+        +clone(nuevo_numero)
+    }
+    class Usuario {
+        +verificado_kyc
+        +verificar_kyc()
+        +establecer_password(password)
+        +agregar_cuenta(cuenta)
+    }
+
+    ComponenteBancario <|-- Banco
+    ComponenteBancario <|-- Sucursal
+    ComponenteBancario <|-- Cuenta
+    Banco o-- Sucursal : contiene
+    Sucursal o-- Cuenta : contiene
+    Usuario "1" o-- "0..*" Cuenta : posee
+
+    %% ========== STATE ==========
+    class EstadoCuenta {
+        <<Abstract>>
+        +puede_depositar()
+        +puede_retirar()
+        +puede_transferir()
+        +get_nombre()
+    }
+    class EstadoActiva
+    class EstadoBloqueada
+    class EstadoSuspendida
+    class EstadoCerrada
+    class EstadoCuentaProducer {
+        +crear(nombre, motivo)
+    }
+
+    Cuenta "1" o-- "1" EstadoCuenta : delega
+    EstadoCuenta <|-- EstadoActiva
+    EstadoCuenta <|-- EstadoBloqueada
+    EstadoCuenta <|-- EstadoSuspendida
+    EstadoCuenta <|-- EstadoCerrada
+    EstadoCuentaProducer ..> EstadoCuenta : produce
+
+    %% ========== OBSERVER ==========
+    class ObservadorCuenta {
+        <<Observer>>
+        +update(evento)
+        +get_nombre()
+    }
+    class ObservadorFraude
+    class ObservadorSaldoCritico
+    class ObservadorLogMovimiento
+    class ObservadorPersistencia
+    class ObservadorProducer {
+        +get_observador(nombre)
+        +get_observadores_default()
+        +listar_disponibles()
+    }
+
+    Cuenta "1" o-- "0..*" ObservadorCuenta : notifica
+    ObservadorCuenta <|-- ObservadorFraude
+    ObservadorCuenta <|-- ObservadorSaldoCritico
+    ObservadorCuenta <|-- ObservadorLogMovimiento
+    ObservadorCuenta <|-- ObservadorPersistencia
+    ObservadorFraude ..> DetectorFraude : delega
+    ObservadorProducer ..> ObservadorCuenta : produce
+
+    %% ========== BRIDGE ==========
+    class OperacionBancaria {
+        <<Abstract>>
+        -_canal : CanalBancario
+        +ejecutar(cuenta_origen, monto, cuenta_destino)
+        +get_tipo()
+    }
+    class Deposito
+    class Retiro
+    class Transferencia
+    class CanalBancario {
+        <<Interface>>
+        +validar(monto, tipo)
+        +notificar(tipo, monto, cuenta, usuario)
+        +get_limite_maximo()
+        +get_limite_minimo()
+    }
+    class CanalWeb
+    class CanalMovil
+    class CanalCajero
+    class CanalBancarioProducer {
+        +get_canal(nombre)
+    }
+
+    OperacionBancaria "1" o-- "1" CanalBancario : Bridge
+    OperacionBancaria <|-- Deposito
+    OperacionBancaria <|-- Retiro
+    OperacionBancaria <|-- Transferencia
+    CanalBancario <|-- CanalWeb
+    CanalBancario <|-- CanalMovil
+    CanalBancario <|-- CanalCajero
+    CanalBancarioProducer ..> CanalBancario : instancia compartida
+
+    %% ========== FACTORY METHOD ==========
+    class OperacionBancariaFactory {
+        +crear(tipo, canal)
+    }
+    class OperacionFactory {
+        <<Abstract>>
+        +crear_operacion()
+    }
+    class DepositoFactory
+    class RetiroFactory
+    class TransferenciaFactory
+    class Operacion {
+        <<Abstract>>
+        +ejecutar(cuenta_origen, monto, canal, cuenta_destino)
+    }
+    class OperacionDeposito
+    class OperacionRetiro
+    class OperacionTransferencia
+
+    OperacionBancariaFactory ..> OperacionBancaria : crea
+    OperacionFactory <|-- DepositoFactory
+    OperacionFactory <|-- RetiroFactory
+    OperacionFactory <|-- TransferenciaFactory
+    Operacion <|-- OperacionDeposito
+    Operacion <|-- OperacionRetiro
+    Operacion <|-- OperacionTransferencia
+    DepositoFactory ..> OperacionDeposito : crea
+    RetiroFactory ..> OperacionRetiro : crea
+    TransferenciaFactory ..> OperacionTransferencia : crea
+
+    %% ========== ABSTRACT FACTORY ==========
+    class AbstractCanalFactory {
+        <<AbstractFactory>>
+        +crear_validador()
+        +crear_notificador()
+        +crear_limite()
+    }
+    class WebFactory
+    class MovilFactory
+    class CajeroFactory
+    class CanalFactoryProducer {
+        +get_factory(canal)
+    }
+    class Validador {
+        <<Interface>>
+    }
+    class Notificador {
+        <<Interface>>
+        +notificar(mensaje)
+    }
+    class LimiteCanal {
+        <<Interface>>
+    }
+
+    AbstractCanalFactory <|-- WebFactory
+    AbstractCanalFactory <|-- MovilFactory
+    AbstractCanalFactory <|-- CajeroFactory
+    CanalFactoryProducer ..> AbstractCanalFactory : devuelve
+    AbstractCanalFactory ..> Validador : produce
+    AbstractCanalFactory ..> Notificador : produce
+    AbstractCanalFactory ..> LimiteCanal : produce
+
+    %% ========== ADAPTER ==========
+    class SMSAdapter
+    class EmailAdapter
+    class PushAdapter
+    class VoucherAdapter
+    class ServicioSMS {
+        <<Adaptee>>
+    }
+    class ServicioEmail {
+        <<Adaptee>>
+    }
+    class ServicioPush {
+        <<Adaptee>>
+    }
+    class ServicioVoucherFisico {
+        <<Adaptee>>
+    }
+    class NotificadorAdapterProducer {
+        +get_adapter(canal, usuario)
+    }
+
+    Notificador <|-- SMSAdapter
+    Notificador <|-- EmailAdapter
+    Notificador <|-- PushAdapter
+    Notificador <|-- VoucherAdapter
+    SMSAdapter o-- ServicioSMS : adapta
+    EmailAdapter o-- ServicioEmail : adapta
+    PushAdapter o-- ServicioPush : adapta
+    VoucherAdapter o-- ServicioVoucherFisico : adapta
+    NotificadorAdapterProducer ..> Notificador : produce
+
+    %% ========== DECORATOR ==========
+    class OperacionDecorator {
+        <<Abstract>>
+        -_operacion : Operacion
+        +ejecutar(cuenta_origen, monto, canal, cuenta_destino)
+    }
+    class LogTiempoDecorator
+    class AuditoriaDecorator
+    class ReintentoDecorator
+    class OperacionDecoratorProducer {
+        +aplicar(operacion, decoradores)
+    }
+
+    Operacion <|-- OperacionDecorator
+    OperacionDecorator o-- Operacion : decora
+    OperacionDecorator <|-- LogTiempoDecorator
+    OperacionDecorator <|-- AuditoriaDecorator
+    OperacionDecorator <|-- ReintentoDecorator
+    OperacionDecoratorProducer ..> OperacionDecorator : apila
+
+    %% ========== BUILDER + PROTOTYPE ==========
+    class CuentaBuilder {
+        <<Builder>>
+        +numero(numero)
+        +tipo(tipo)
+        +saldo_inicial(monto)
+        +asociar_usuario(usuario)
+        +asociar_sucursal(sucursal)
+        +build()
+        +clone_desde(cuenta)
+    }
+    class CuentaPrototypeRegistry {
+        <<Prototype>>
+        +registrar(nombre, cuenta)
+        +get(nombre)
+        +listar()
+        +eliminar(nombre)
+    }
+
+    CuentaBuilder ..> Cuenta : construye
+    CuentaBuilder ..> CuentaPrototypeRegistry : consulta
+    CuentaPrototypeRegistry ..> Cuenta : clona
+
+    %% ========== COMMAND ==========
+    class ComandoBancario {
+        <<Command>>
+        +ejecutar()
+        +deshacer()
+        +get_descripcion()
+    }
+    class ComandoDeposito
+    class ComandoRetiro
+    class ComandoTransferencia
+
+    ComandoBancario <|-- ComandoDeposito
+    ComandoBancario <|-- ComandoRetiro
+    ComandoBancario <|-- ComandoTransferencia
+    HistorialComandos o-- ComandoBancario : pila undo/redo
+    ComandoDeposito ..> Cuenta : receiver
+    ComandoRetiro ..> Cuenta : receiver
+    ComandoTransferencia ..> Cuenta : receiver
+
+    %% ========== STRATEGY ==========
+    class EstrategiaInteres {
+        <<Strategy>>
+        +calcular_cuota(monto, tasa_anual, num_cuotas)
+        +calcular_total_intereses(monto, tasa_anual, num_cuotas)
+        +get_nombre()
+    }
+    class InteresEstrategiaFijo
+    class InteresEstrategiaVariable
+    class EstrategiaInteresProducer
+    class Prestamo {
+        -_estrategia : EstrategiaInteres
+        +registrar_pago()
+    }
+    class GestorPrestamos
+
+    Prestamo "1" o-- "1" EstrategiaInteres : delega calculo
+    EstrategiaInteres <|-- InteresEstrategiaFijo
+    EstrategiaInteres <|-- InteresEstrategiaVariable
+    EstrategiaInteresProducer ..> EstrategiaInteres : produce
+    GestorPrestamos o-- Prestamo : gestiona
+
+    %% ========== FACADE ==========
+    class UsuarioFacade {
+        <<Facade>>
+        +registrar_usuario()
+        +verificar_kyc(documento)
+        +crear_cuenta()
+    }
+    class OperacionFacade {
+        <<Facade>>
+        +depositar()
+        +retirar()
+        +transferir()
+    }
+    class Transaccion {
+        +procesar(cuenta_origen, monto, canal, cuenta_destino, tipo)
+    }
+
+    UsuarioFacade ..> CuentaBuilder : usa
+    UsuarioFacade ..> Banco : registra en
+    OperacionFacade ..> Transaccion : orquesta
+    OperacionFacade ..> Banco : busca cuentas
+    Transaccion ..> OperacionBancariaFactory : crea operacion
+    Transaccion ..> OperacionDecoratorProducer : decora
+    Transaccion ..> DetectorFraude : evalua riesgo
+    Transaccion ..> CanalFactoryProducer : obtiene factory
+    Transaccion ..> NotificadorAdapterProducer : notifica
+
+    note for OperacionBancaria "Bridge: eje central del sistema"
+    note for Cuenta "Composite + State + Observer"
+    note for HistorialComandos "Invoker: undo y redo"
